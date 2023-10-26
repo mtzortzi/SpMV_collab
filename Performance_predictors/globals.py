@@ -1,1 +1,1 @@
-DATA_PATH = "../../Dataset/data/best_format_runs_March_2023.csv"
+DATA_PATH = "./Dataset/data/best_format_runs_March_2023.csv"
