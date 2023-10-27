@@ -31,7 +31,8 @@ if __name__ == "__main__":
                                     MLP_globals.in_dimension,
                                     MLP_globals.out_dimension,
                                     MLP_globals.hidden_size,
-                                    csv_path)
+                                    csv_path,
+                                    selectect_system)
                 elif currentVal == "svr":
                     dataset = dataReader.SparseMatrixDataset("./Dataset/data/data_sample.csv")
                     print("running Support Vector Regression model")

@@ -3,6 +3,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import MLP.globals as globals
 from tqdm import tqdm
+import numpy as np
 
 class MlpPredictor(torch.nn.Module):
     def __init__(self, activation_fn, 
@@ -27,14 +28,22 @@ class MlpPredictor(torch.nn.Module):
         return self.allLayers(x)
     
 
-def train(model : MlpPredictor, epoch, train_dataset, loss_fn, optimizer):
+def reshapeFromShape(lst, shape):
+    new_shape = 0
+    for i in range(len(shape)):
+        new_shape = new_shape+shape[i]
+    return np.array(lst).reshape(new_shape)
+
+def getShape(list):
+    return [len(a) for a in list]
+
+def train(model : MlpPredictor, epoch, train_loader : DataLoader, loss_fn, optimizer):
     costTbl = []
     count_tbl = []
     c = 0
-    dataloader = DataLoader(train_dataset, shuffle=True)
     j = 0
 
-    for batch in tqdm(dataloader, ncols=75):
+    for batch in tqdm(train_loader, ncols=75):
         (x, y) = batch
         optimizer.zero_grad()
         y_pred = model(x)
@@ -43,35 +52,41 @@ def train(model : MlpPredictor, epoch, train_dataset, loss_fn, optimizer):
         optimizer.step()
         j += 1
         if j%500 == 0:
-            c += 1000 + (epoch-1)*len(train_dataset)
+            c += 1000 + (epoch-1)*len(train_loader)
             print("\r\t\t\t\t\t\t\t\t\t   Cost at iteration %i = %f" %(epoch, cost.detach().item()), end="")
             costTbl.append(cost.item())
             count_tbl.append(c)
         
     return costTbl, count_tbl
 
-def test(model : MlpPredictor, test_dataset, loss_fn):
+def validation(model : MlpPredictor, validation_loader, loss_fn):
     model.eval()
     test_loss = 0
     with torch.no_grad():
-        for x, y in test_dataset:
+        for batch in tqdm(validation_loader, ncols=75):
+            (x, y) = batch
             y_pred = model(x)
             test_loss += loss_fn(y_pred, y)
-    test_loss /= len(test_dataset)
+    test_loss /= len(validation_loader)
     print('Test set: Avg. loss: {:.4f}\n'.format(test_loss, end=""))
     return test_loss
 
-def fit(tbl_test_losses : list, tbl_train_losses : list, tbl_train_counter : list, model, train_set, test_set, optimizer, loss_fn):
-    test_losses = test(model, test_set, loss_fn)
+def fit(tbl_test_losses : list, tbl_train_losses : list, tbl_train_counter : list, model, train_loader, validation_loader, optimizer, loss_fn):
+    test_losses = validation(model, validation_loader, loss_fn)
     tbl_test_losses.append(test_losses)
     for epoch in range(1, globals.nb_epochs + 1):
         #Training the model
-        (train_losses, train_counter) = train(model, epoch, train_set, loss_fn, optimizer)
+        (train_losses, train_counter) = train(model, epoch, train_loader, loss_fn, optimizer)
         tbl_train_losses.append(train_losses)
         tbl_train_counter.append(train_counter)
 
         #Test
-        test_losses = test(model, test_set, loss_fn)
+        test_losses = validation(model, validation_loader, loss_fn)
         tbl_test_losses.append(test_losses)
+    
+    s = getShape(tbl_train_counter)
+    tbl_train_counter = reshapeFromShape(tbl_train_counter, s)
+    s = getShape(tbl_train_losses)
+    tbl_train_losses = reshapeFromShape(tbl_train_losses, s)
 
     return (tbl_train_counter, tbl_train_losses, tbl_test_losses)
