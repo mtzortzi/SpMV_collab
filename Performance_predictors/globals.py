@@ -1,1 +1,10 @@
-DATA_PATH = "./Dataset/data/best_format_runs_March_2023.csv"
+DATA_PATH = "./Dataset/data/"
+hardware = ["Tesla-P100", 
+            "Tesla-V100", 
+            "AMD-EPYC-24", 
+            "ARM-NEON", 
+            "INTEL-XEON", 
+            "IBM-POWER9", 
+            "Tesla-A100", 
+            "Alveo-U280", 
+            "AMD-EPYC-64"]

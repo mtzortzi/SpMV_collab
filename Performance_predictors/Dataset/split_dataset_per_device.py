@@ -1,4 +1,5 @@
 import pandas as pd
 
-header = pd.read_csv("./data/data_sample_2.csv")
-print(header)
+data = pd.read_csv("./data/all_format_runs_March_2023.csv")
+architectures = data["System"].unique().tolist()
+print(architectures)

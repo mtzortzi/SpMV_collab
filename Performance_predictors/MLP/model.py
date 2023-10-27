@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+from torch.utils.data import DataLoader
 import MLP.globals as globals
 from tqdm import tqdm
 
@@ -30,16 +31,17 @@ def train(model : MlpPredictor, epoch, train_dataset, loss_fn, optimizer):
     costTbl = []
     count_tbl = []
     c = 0
-    
-    for j in tqdm(range(len(train_dataset)), ncols=75):
-        #Todo : retrive data from dataset
-        (x, y) = train_dataset[j]
+    dataloader = DataLoader(train_dataset, shuffle=True)
+    j = 0
+
+    for batch in tqdm(dataloader, ncols=75):
+        (x, y) = batch
         optimizer.zero_grad()
         y_pred = model(x)
         cost = loss_fn(y_pred, y)
         cost.backward()
         optimizer.step()
-
+        j += 1
         if j%500 == 0:
             c += 1000 + (epoch-1)*len(train_dataset)
             print("\r\t\t\t\t\t\t\t\t\t   Cost at iteration %i = %f" %(epoch, cost.detach().item()), end="")
@@ -59,7 +61,7 @@ def test(model : MlpPredictor, test_dataset, loss_fn):
     print('Test set: Avg. loss: {:.4f}\n'.format(test_loss, end=""))
     return test_loss
 
-def fit(tbl_test_losses, tbl_train_losses, tbl_train_counter, model, train_set, test_set, optimizer, loss_fn):
+def fit(tbl_test_losses : list, tbl_train_losses : list, tbl_train_counter : list, model, train_set, test_set, optimizer, loss_fn):
     test_losses = test(model, test_set, loss_fn)
     tbl_test_losses.append(test_losses)
     for epoch in range(1, globals.nb_epochs + 1):
