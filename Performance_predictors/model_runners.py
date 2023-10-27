@@ -3,6 +3,7 @@ import MLP.model as MLP_model
 import dataReader
 import torch
 import matplotlib.pyplot as plt
+import numpy as np
 
 def run_mlp(activation_function,
             nb_hidden_layers,

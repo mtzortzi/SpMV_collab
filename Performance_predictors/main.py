@@ -25,7 +25,7 @@ if __name__ == "__main__":
                 print("Enabling model {}".format(currentVal))
                 if currentVal  == "mlp":
                     print("running mlp model")
-                    csv_path = g.DATA_PATH + "best_format_runs_March_2023.csv"
+                    csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(selectect_system)
                     runners.run_mlp(MLP_globals.activation_fn,
                                     MLP_globals.nb_hidden_layers,
                                     MLP_globals.in_dimension,
