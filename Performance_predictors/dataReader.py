@@ -12,7 +12,6 @@ features = ["A_mem_footprint",
 
 class SparseMatrixDataset(Dataset):
     def __init__(self, csv_file):
-        # TODO: innit X and Y of dataset
         dataframe = pd.read_csv(csv_file) # Getting all data
 
         # Scaling first row
