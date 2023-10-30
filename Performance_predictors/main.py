@@ -3,38 +3,39 @@ import model_runners as runners
 import MLP.globals as MLP_globals
 import dataReader
 import globals as g
+import argparse
 
 if __name__ == "__main__":
-    argumentList = sys.argv[1:]
-    options = "hm:s:"
-    lst_options = ["help", "model="]
-    selectect_system = ""
-    try:
-        arguments, values = getopt.getopt(argumentList, options, lst_options)
-        for currentArg, currentVal in arguments:
-            if currentArg in ("-h", "--help"):
-                print("Help")
-            elif currentArg in ("-s", "--system"):
-                if currentVal in g.hardware:
-                    selectect_system = currentVal
-                    print("Selected system : {}".format(currentVal))
-                else:
-                    print("No valid system found for {}".format(currentVal))
-                    print("Available systems \n{}".format(g.hardware))
-            elif currentArg in ("-m", "--model"):
-                print("Enabling model {}".format(currentVal))
-                if currentVal  == "mlp":
-                    print("running mlp model")
-                    csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(selectect_system)
-                    runners.run_mlp(MLP_globals.activation_fn,
-                                    MLP_globals.nb_hidden_layers,
-                                    MLP_globals.in_dimension,
-                                    MLP_globals.out_dimension,
-                                    MLP_globals.hidden_size,
-                                    csv_path,
-                                    selectect_system)
-                elif currentVal == "svr":
-                    dataset = dataReader.SparseMatrixDataset("./Dataset/data/data_sample.csv")
-                    print("running Support Vector Regression model")
-    except getopt.error as err:
-        print(str(err))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-m', '--model', metavar='MODEL', required=True, help='Model to run')
+    parser.add_argument('-s', '--system', metavar='SYSTEM', required=True, help='CPU/GPU name')
+
+    args = parser.parse_args()
+    args_data = vars(args)
+
+    model_used = ""
+    system_used = ""
+    
+    for arg, value in args_data.items():
+        if (arg == "model"):
+            model_used = value
+        if (arg == "system"):
+            system_used = value
+    
+
+    assert model_used in g.models
+    assert system_used in g.hardware
+
+    if model_used == "mlp":
+        csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
+        runners.run_mlp(MLP_globals.activation_fn,
+                        MLP_globals.nb_hidden_layers,
+                        MLP_globals.in_dimension,
+                        MLP_globals.out_dimension,
+                        MLP_globals.hidden_size,
+                        csv_path,
+                        system_used)
+        
+    if model_used == "svr":
+        dataset = dataReader.SparseMatrixDataset("./Dataset/data/data_sample.csv")
+        print("running Support Vector Regression model")

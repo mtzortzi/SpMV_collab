@@ -1,4 +1,5 @@
 DATA_PATH = "./Dataset/data/"
+
 hardware = ["Tesla-P100", 
             "Tesla-V100", 
             "AMD-EPYC-24", 
@@ -8,4 +9,8 @@ hardware = ["Tesla-P100",
             "Tesla-A100", 
             "Alveo-U280", 
             "AMD-EPYC-64"]
+
 MODEL_PATH = "./saved_models/"
+
+models = ["mlp",
+          "svr"]
