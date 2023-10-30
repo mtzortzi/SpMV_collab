@@ -1,5 +1,8 @@
 import MLP.globals as MLP_globals
 import MLP.model as MLP_model
+import SVR.globals as SVR_globals
+import SVR.model as SVR_model
+
 import dataReader
 import torch
 from torch.utils.data.sampler import SubsetRandomSampler
@@ -71,10 +74,13 @@ def run_mlp(activation_function,
     saved_figure_path = MODEL_PATH + "/{}/mlp_{}_{}epochs.png".format(system, system, n_iteration)
     plt.savefig(saved_figure_path)
 
-
 def predict_mlp(model, input, dataset : db.SparseMatrixDataset):
     output = model(input)
     gflops_unscaled = dataset.scaler_gflops.inverse_transform(output[0])
     energy_efficiency_unscaled = dataset.scaler_energy_efficiency.inverse_transform(output[1])
     prediction = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1)
     return prediction
+
+def run_svr(kernel, C, epsilon, gamma, csv_path):
+    dataset = dataReader.SparseMatrixDataset(csv_path)
+    svr_model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma, dataset)

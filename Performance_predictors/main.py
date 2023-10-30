@@ -1,6 +1,6 @@
-import getopt, sys
 import model_runners as runners
 import MLP.globals as MLP_globals
+import SVR.globals as SVR_globals
 import dataReader
 import globals as g
 import argparse
@@ -37,5 +37,10 @@ if __name__ == "__main__":
                         system_used)
         
     if model_used == "svr":
-        dataset = dataReader.SparseMatrixDataset("./Dataset/data/data_sample.csv")
+        csv_path = g.DATA_PATH + "/data_sample_2.csv"
+        runners.run_svr(SVR_globals.kernel,
+                        SVR_globals.C,
+                        SVR_globals.epsilon,
+                        SVR_globals.gamma,
+                        csv_path)
         print("running Support Vector Regression model")

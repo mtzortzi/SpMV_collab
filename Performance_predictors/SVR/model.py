@@ -20,8 +20,9 @@ class SvrPredictor(torch.nn.Module):
 
 def train_SVR(model:SvrPredictor, dataset):
     # TODO: retrieve dataset
-    X = []
-    Y = []
+    print("X = {}\nY = {}".format(dataset[:][0], dataset[:][1]))
+    X = dataset[:][0]
+    Y = dataset[:][1]
 
     sc_X = StandardScaler()
     sc_Y = StandardScaler()

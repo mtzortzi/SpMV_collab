@@ -55,7 +55,6 @@ class SparseMatrixDataset(Dataset):
 
         # Adding the scaled glops to the energy_efficiency output
         self.y = torch.cat((gflops_scaled, energy_efficiency_scaled), 1)
-        print(self.y[0][0])
     
     def __len__(self):
         return len(self.x)
