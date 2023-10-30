@@ -9,15 +9,14 @@ The aim of this project is to build machine learning models that aims to predict
 | Tesla-P100    | GPU           | cu-COO, cu-CSR, cu-HYB, CSR5 |
 | Tesla-V100    | GPU           | cu-COO, cu-CSR, cu-HYB, CSR5 |
 | Tesla-A100    | GPU           |  cu-COO, cu-CSR, Merge       |
-| AMD-EPYC-64   |  CPU          | Naive-CSR, CSR5, MKL-IE      |
-|
-|
-|
-|
-|
-|
-| Content Cell  | Content Cell  | Content Cell  |
-| Content Cell  | Content Cell  | Content Cell  |
+| AMD-EPYC-64   | CPU           | Naive-CSR, CSR5, MKL-IE      |
+| AMD-EPYC-24   | CPU           | Naive-CSR, Vec-CSR, AOCL, MKL-IE, SELL-C-s,Merge-CSR, CSR5, SparseX |
+| INTEL-XEON    | CPU           | Naive-CSR, Vec-CSR, MKL-IE, SELL-C-s, Merge-CSR, CSR5, SparseX      |
+| ARM-NEON      | CPU           | Naive-CSR, ARM-lib, Merge-CSR, SparseX, SELL-C-s                    |
+| IBM-POWER9    | CPU           | Naive-CSR, Bal-CSR, Merge-CSR, SparseX                              |
+| Alveo-U280    | FPGA          | Xilinx-lib                                                          |
+
+
 
 
 
