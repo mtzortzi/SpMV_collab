@@ -2,6 +2,23 @@
 
 The aim of this project is to build machine learning models that aims to predict the performance of a given architecture (CPU, GPU, FPGA) of the SpMV kernel given a set of features that describes sparce matrices.
 
+## Dataset Info
+### Experimental Setup - 9 Devices
+| Device  |  Arch |  Formats |
+| ------------- | ------------- | ------------- |
+| Tesla-P100    | GPU           | cu-COO, cu-CSR, cu-HYB, CSR5 |
+| Tesla-V100    | GPU           | cu-COO, cu-CSR, cu-HYB, CSR5 |
+| Tesla-A100    | GPU           |  cu-COO, cu-CSR, Merge       |
+
+
+
+
+
+| Content Cell  | Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  | Content Cell  |
+
+
+
 ## Running models
 ### MLP
 Multi Layer Perceptron (MLP) is widely used in data science in order to make prediction given a set of features. Generaly speaking MLP neural network are caracterized by several features :
