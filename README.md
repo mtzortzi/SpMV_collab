@@ -1,6 +1,6 @@
 # SpMV_collab
 
-The aim of this project is to build machine learning models that aims to predict the performance of a given architecture (CPU, GPU, FPGA) of the SpMV kernel given a set of features that describes sparce matrices.
+The aim of this project is to build machine learning models to predict the performance of a given architecture (CPU, GPU, FPGA) of the SpMV kernel given a set of features that describes sparce matrices.
 
 ## Dataset Info
 ### Experimental Setup - 9 Devices
@@ -17,18 +17,30 @@ The aim of this project is to build machine learning models that aims to predict
 | Alveo-U280    | FPGA          | Xilinx-lib                                                          |
 
 
+**Matrix dataset**
+  -  ~15260, Artificial matrices
+
+**Two results datasets**
+  - All matrices - all format runs (size 568158 x 35)
+      > Filename : [all_format_runs_March_2023.csv](https://github.com/mtzortzi/SpMV_collab/blob/main/Performance_predictors/Dataset/data/all_format_runs_March_2023.csv)
+  - All matrices - best performing (per Device) format run (size 122941 x 35)
+     > Filename: [best_format_runs_March_2023.csv](https://github.com/mtzortzi/SpMV_collab/blob/main/Performance_predictors/Dataset/data/best_format_runs_March_2023.csv)
+
+They are stored in /various/pmpakos/SpMV-Research/
+header is included, just pd.read(‘name.csv’)
+
 
 
 
 ## Running models
 ### MLP
-Multi Layer Perceptron (MLP) is widely used in data science in order to make prediction given a set of features. Generaly speaking MLP neural network are caracterized by several features :
+Multi-Layer Perceptron (MLP) is widely used in data science in order to make predictions given a set of features. Generally speaking MLP neural networks are characterized by several features :
 * Input dimension
 * Output dimension
 * Number of hidden layers
 * Dimensions of those hidden layers
 
-To have a better understanding of thos hyperparameters you can take a look at the following schema : 
+To have a better understanding of those hyperparameters you can take a look at the following schema : 
 
 ![image](./img/mlp_architecturel.jpg)
 
