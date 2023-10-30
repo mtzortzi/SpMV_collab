@@ -88,8 +88,9 @@ def predict(model, dataset : db.SparseMatrixDataset):
     (X, Y)  = dataset[index_input]
 
     Y_pred = model(X)
-    print(Y_pred.detach())
-    print(Y)
+
+    print("Prediction (scaled) : {}".format(Y_pred.detach()))
+    print("Expected (scaled) : {}".format(Y))
     
     gflops_predicted_unscaled = torch.tensor(dataset.scaler_gflops.inverse_transform(Y_pred[0].detach().view(1, -1)))
     energy_efficiency_predicted_unscaled = torch.tensor(dataset.scaler_energy_efficiency.inverse_transform(Y_pred[1].detach().view(1, -1)))
@@ -100,9 +101,8 @@ def predict(model, dataset : db.SparseMatrixDataset):
     energy_efficiency_unscaled = torch.tensor(dataset.scaler_energy_efficiency.inverse_transform(Y[0].view(1, -1)))
     expected = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1)    
 
-    print(prediction)
-    print(expected)
-
+    print("Prediction : {}".format(prediction))
+    print("Expected : {}".format(expected))
     return prediction
 
 def run_svr(kernel, C, epsilon, gamma, csv_path):
