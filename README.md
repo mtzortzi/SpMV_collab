@@ -26,10 +26,13 @@ The aim of this project is to build machine learning models to predict the perfo
   - All matrices - best performing (per Device) format run (size 122941 x 35)
      > Filename: [best_format_runs_March_2023.csv](https://github.com/mtzortzi/SpMV_collab/blob/main/Performance_predictors/Dataset/data/best_format_runs_March_2023.csv)
 
-They are stored in /various/pmpakos/SpMV-Research/
-header is included, just pd.read(‘name.csv’)
-
-
+**35 columns of the two result datasets**
+| Feature |  Description | 
+| ------------- | ------------- |
+| mtx_name      |  -            |
+| distribution  |  -            |
+| placement     |  -            |
+| seed          |  -            |
 
 
 ## Running models
