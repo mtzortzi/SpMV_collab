@@ -40,7 +40,7 @@ if __name__ == "__main__":
                                            MLP_globals.hidden_size,
                                            model_name,
                                            system_used)
-             
+            
 
     elif model_used == "mlp":
         csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)

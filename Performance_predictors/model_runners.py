@@ -10,8 +10,8 @@ from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import numpy as np
 from globals import MODEL_PATH
-from globals import models
 import dataReader as db
+import utils
 
 def run_mlp(activation_function,
             nb_hidden_layers,
@@ -78,6 +78,15 @@ def run_mlp(activation_function,
 def predict(model, input, dataset : db.SparseMatrixDataset):
     #TODO: get random X and Y to do a prediction
 
+    # 1. Get random index
+    # 2. Retrieve corresponding X and Y
+    # 3. Compute Y_pred = model(x)
+    # 4. make Y_pred and Y human readable
+    # 5. Compare Y_pred and Y
+
+    index_input = utils.generate_random_int(0, len(dataset))
+    
+
     output = model(input)
     gflops_unscaled = dataset.scaler_gflops.inverse_transform(output[0])
     energy_efficiency_unscaled = dataset.scaler_energy_efficiency.inverse_transform(output[1])
@@ -88,6 +97,7 @@ def run_svr(kernel, C, epsilon, gamma, csv_path):
     dataset = dataReader.SparseMatrixDataset(csv_path)
     svr_model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma)
     SVR_model.train_SVR(svr_model, dataset)
+
 
 def load_mlp_model(activation_fn, 
                  nb_hidden_layers,
