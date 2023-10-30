@@ -9,11 +9,13 @@ The aim of this project is to build machine learning models that aims to predict
 | Tesla-P100    | GPU           | cu-COO, cu-CSR, cu-HYB, CSR5 |
 | Tesla-V100    | GPU           | cu-COO, cu-CSR, cu-HYB, CSR5 |
 | Tesla-A100    | GPU           |  cu-COO, cu-CSR, Merge       |
-
-
-
-
-
+| AMD-EPYC-64   |  CPU          | Naive-CSR, CSR5, MKL-IE      |
+|
+|
+|
+|
+|
+|
 | Content Cell  | Content Cell  | Content Cell  |
 | Content Cell  | Content Cell  | Content Cell  |
 
