@@ -23,21 +23,8 @@ def train_SVR(model:SvrPredictor, dataset):
     print("X = {}\nY = {}".format(dataset[:][0], dataset[:][1]))
     X = dataset[:][0]
     Y = dataset[:][1]
-
-    sc_X = StandardScaler()
-    sc_Y = StandardScaler()
-    X = sc_X.fit_transform(X)
-    Y = sc_Y.fit_transform(Y)
     model.regressor.fit(X, Y)
 
-# dataset = pd.read_csv("./Position_Salaries.csv")
-# X = dataset.iloc[:,1:2].values.astype(float)
-# Y = dataset.iloc[:,2:3].values.astype(float)
-
-# sc_X = StandardScaler()
-# sc_Y = StandardScaler()
-# X = sc_X.fit_transform(X)
-# Y = sc_Y.fit_transform(Y)
 
 # regressor = SVR(kernel='rbf', C=10, epsilon=0.01, gamma=0.25)
 # regressor.fit(X, Y)
