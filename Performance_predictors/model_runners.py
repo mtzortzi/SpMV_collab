@@ -75,7 +75,7 @@ def run_mlp(activation_function,
     saved_figure_path = MODEL_PATH + "/{}/mlp_{}_{}epochs.png".format(system, system, n_iteration)
     plt.savefig(saved_figure_path)
 
-def predict(model, input, dataset : db.SparseMatrixDataset):
+def predict(model, dataset : db.SparseMatrixDataset):
     #TODO: get random X and Y to do a prediction
 
     # 1. Get random index
@@ -85,12 +85,24 @@ def predict(model, input, dataset : db.SparseMatrixDataset):
     # 5. Compare Y_pred and Y
 
     index_input = utils.generate_random_int(0, len(dataset))
-    
+    (X, Y)  = dataset[index_input]
 
-    output = model(input)
-    gflops_unscaled = dataset.scaler_gflops.inverse_transform(output[0])
-    energy_efficiency_unscaled = dataset.scaler_energy_efficiency.inverse_transform(output[1])
-    prediction = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1)
+    Y_pred = model(X)
+    print(Y_pred.detach())
+    print(Y)
+    
+    gflops_predicted_unscaled = torch.tensor(dataset.scaler_gflops.inverse_transform(Y_pred[0].detach().view(1, -1)))
+    energy_efficiency_predicted_unscaled = torch.tensor(dataset.scaler_energy_efficiency.inverse_transform(Y_pred[1].detach().view(1, -1)))
+    prediction = torch.cat((gflops_predicted_unscaled, energy_efficiency_predicted_unscaled), 1)
+
+
+    gflops_unscaled = torch.tensor(dataset.scaler_gflops.inverse_transform(Y[0].view(1, -1)))
+    energy_efficiency_unscaled = torch.tensor(dataset.scaler_energy_efficiency.inverse_transform(Y[0].view(1, -1)))
+    expected = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1)    
+
+    print(prediction)
+    print(expected)
+
     return prediction
 
 def run_svr(kernel, C, epsilon, gamma, csv_path):
