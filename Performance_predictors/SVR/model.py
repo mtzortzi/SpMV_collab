@@ -1,11 +1,5 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
-from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR
-import numpy as np
 import torch
-from torch.utils.data import DataLoader
 
 
 class SvrPredictor(torch.nn.Module):
