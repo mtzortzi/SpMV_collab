@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 
 def generate_random_int(min : int, max : int) -> int:
     assert max > min
@@ -6,3 +7,6 @@ def generate_random_int(min : int, max : int) -> int:
     r = np.random.random()
     generated_number = (r*range + min)%range
     return int(generated_number)
+
+def MAPELoss(output, target):
+    return torch.mean(torch.abs((target - output) / target))
