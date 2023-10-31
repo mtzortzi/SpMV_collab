@@ -113,4 +113,6 @@ optional arguments:
                         Model name to run
   -s SYSTEM, --system SYSTEM
                         CPU/GPU name
-  -l, --load            Load the model described from it's hyperparameters in it's corresponfing global.py file and the -m parameter described above```
+  -l, --load            Load the model described from it's hyperparameters in it's 
+  corresponfing global.py file and the -m parameter described above
+````
