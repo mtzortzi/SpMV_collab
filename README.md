@@ -76,12 +76,12 @@ The saved_model folder is where we store all the results from our trained model.
 
 ### Models
 For each model that is implemented in this projet, a specific folder is created where the following is stored :
-* model.py : this is the file where the model class as well as the train function and other functianlities relative to the model is written.
-* globals.py : this is the file where all the parameters fo the model are stored.
+* ``model.py`` : this is the file where the model class as well as the train function and other functianlities relative to the model is written.
+* ``globals.py`` : this is the file where all the parameters fo the model are stored.
 
 
 ### Main program
-The main program consist of several bricks to work. First it retrives parameters from the command line in order to work. Then given of those parameters parsed the corresponding runner is called from the model_runner.py file. Also from this file before runnning the program data is preprocessed from the dataReader.py file. In this file we extract the corresponding features from our dataset :
+The main program consist of several bricks to work. First it retrives parameters from the command line in order to work. Then given of those parameters parsed the corresponding runner is called from the ``model_runner.py`` file. Also from this file before runnning the program data is preprocessed from the ``dataReader.py`` file. In this file we extract the corresponding features from our dataset :
 * A_mem_footprint
 * avg_nz_row
 * skew_coeff
@@ -92,13 +92,13 @@ The main program consist of several bricks to work. First it retrives parameters
 
 All of these features needs to be scaled from 0 to 1 (except the avg_bandwidth_scaled that is already scaled and system that is a string). We scale our data in order to increase stability in the learning process. For the system feature, given the fact that it's a string we used a one hot encoding system, where we retrived each unique class and associate it a unique number in [0, nb_class - 1].
 
-Finally in the globals.py file you will find the global path for the dataset and the saved models, the different hardware system that are implemented in the dataset and the implemented models.
+Finally in the ``globals.py`` file you will find the global path for the dataset and the saved models, the different hardware system that are implemented in the dataset and the implemented models.
 
 
 ## How to make it work on your computer
 ### Adding a new model
 If you want to add a new model you must to the following :
-1. Create a new folder associated to your model with the model.py and globals.py associated in it. Also it is mandatory that your model class inherits the torch.nn.Module class.
+1. Create a new folder associated to your model with the ``model.py`` and ``globals.py`` associated in it. Also it is mandatory that your model class inherits the torch.nn.Module class.
 2. Add the corresponding function to run your model in the runner
 3. Add the name of your implemented model in the `models` array in the globals.py file.
 4. Finally in the main program add a hookup to the parameter parser in order to run or load ur model when executing the program.
