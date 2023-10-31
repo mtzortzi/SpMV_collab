@@ -6,12 +6,12 @@ import SVR.model as SVR_model
 import dataReader
 import torch
 from torch.utils.data.sampler import SubsetRandomSampler
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 import matplotlib.pyplot as plt
 import numpy as np
 from globals import MODEL_PATH
 import dataReader as db
-import utils
+import utils_func
 
 def run_mlp(activation_function,
             nb_hidden_layers,
@@ -75,26 +75,17 @@ def run_mlp(activation_function,
     saved_figure_path = MODEL_PATH + "/{}/mlp_{}_{}epochs.png".format(system, system, n_iteration)
     plt.savefig(saved_figure_path)
 
-def predict(model, dataset : db.SparseMatrixDataset):
-    #TODO: get random X and Y to do a prediction
-
-    # 1. Get random index
-    # 2. Retrieve corresponding X and Y
-    # 3. Compute Y_pred = model(x)
-    # 4. make Y_pred and Y human readable
-    # 5. Compare Y_pred and Y
-
-    index_input = utils.generate_random_int(0, len(dataset))
-    (X, Y)  = dataset[index_input]
+def predict(model, dataset : db.SparseMatrixDataset, index):
+    (X, Y)  = dataset[index]
 
     Y_pred = model(X)
 
-    loss = torch.nn.MSELoss()
+    # loss = torch.nn.MSELoss()
 
-    print("Prediction (scaled) : {}".format(Y_pred))
-    print("Expected (scaled) : {}".format(Y))
-    print("Loss (scaled) : {}".format(loss(Y_pred, Y)))
-    print("Loss % (scaled) : {}".format(utils.MAPELoss(Y_pred, Y)))
+    # print("Prediction (scaled) : {}".format(Y_pred))
+    # print("Expected (scaled) : {}".format(Y))
+    # print("Loss (scaled) : {}".format(loss(Y_pred, Y)))
+    # print("Loss % (scaled) : {}".format(utils_func.MAPELoss(Y_pred, Y)))
           
     
     gflops_predicted_unscaled = torch.tensor(dataset.scaler_gflops.inverse_transform(Y_pred[0].detach().view(1, -1)))
@@ -102,14 +93,14 @@ def predict(model, dataset : db.SparseMatrixDataset):
     prediction = torch.cat((gflops_predicted_unscaled, energy_efficiency_predicted_unscaled), 1)
 
 
-    gflops_unscaled = torch.tensor(dataset.scaler_gflops.inverse_transform(Y[0].view(1, -1)))
-    energy_efficiency_unscaled = torch.tensor(dataset.scaler_energy_efficiency.inverse_transform(Y[0].view(1, -1)))
-    expected = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1)    
+    # gflops_unscaled = torch.tensor(dataset.scaler_gflops.inverse_transform(Y[0].view(1, -1)))
+    # energy_efficiency_unscaled = torch.tensor(dataset.scaler_energy_efficiency.inverse_transform(Y[0].view(1, -1)))
+    # expected = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1)    
 
-    print("Prediction : {}".format(prediction))
-    print("Expected : {}".format(expected))
-    print("Loss : {}".format(loss(prediction, expected)))
-    print("Loss % : {}".format(utils.MAPELoss(prediction, expected)))
+    # print("Prediction : {}".format(prediction))
+    # print("Expected : {}".format(expected))
+    # print("Loss : {}".format(loss(prediction, expected)))
+    # print("Loss % : {}".format(utils_func.MAPELoss(prediction, expected)))
     return prediction
 
 def run_svr(kernel, C, epsilon, gamma, csv_path):
@@ -141,3 +132,33 @@ def load_svr_model(kernel, C, epsilon, gamma, name, system):
     model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma)
     model.load_state_dict(torch.load(model_path))
     return model
+
+
+def plot_prediction_dispersion(model:torch.nn.Module, validation_dataset:db.SparseMatrixDataset, name:str, path:str):
+    length_dataset = len(validation_dataset)
+    predictions = []
+    expectations = []
+    for idx in range(length_dataset):
+        Y = validation_dataset[idx][1]
+        prediction = predict(model, validation_dataset, idx)
+        gflops_unscaled = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(Y[0].view(1, -1)))
+        energy_efficiency_unscaled = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(Y[0].view(1, -1)))
+        expectation = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1) 
+        predictions.append(prediction.numpy().flatten().tolist())
+        expectations.append(expectation.numpy().flatten().tolist())
+
+    gflops_predictions = [val[0] for val in predictions[:]]
+    energy_efficiency_predictions = [val[1] for val in predictions[:]]
+
+    gflops_expectations = [val[0] for val in expectations[:]]
+    energy_efficiency_expectations = [val[1] for val in expectations[:]]
+
+    identity = np.arange(0, length_dataset, 10)
+
+    plt.scatter(gflops_predictions, gflops_expectations, color="blue")
+    plt.plot(identity, identity, color="red")
+    plt.savefig("gflops_scattering_{}.png".format(name))
+
+    plt.scatter(energy_efficiency_predictions, energy_efficiency_expectations, color="blue")
+    plt.plot(identity, identity, color ="red")
+    plt.savefig("energy_efficiency_scattering_{}.png".format(name))

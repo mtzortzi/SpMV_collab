@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from torch.utils.data import Dataset
 
 def generate_random_int(min : int, max : int) -> int:
     assert max > min
@@ -10,3 +11,4 @@ def generate_random_int(min : int, max : int) -> int:
 
 def MAPELoss(output, target):
     return torch.mean(torch.abs((target - output) / target))
+

@@ -4,6 +4,7 @@ import SVR.globals as SVR_globals
 import dataReader
 import globals as g
 import argparse
+import utils_func
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -32,7 +33,7 @@ if __name__ == "__main__":
 
     if load_model :
         if model_used == "mlp":
-            csv_path = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
+            csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
             model_name = "{}_{}epochs".format(model_used, MLP_globals.nb_epochs)
             model = runners.load_mlp_model(MLP_globals.activation_fn,
                                            MLP_globals.nb_hidden_layers,
@@ -41,8 +42,9 @@ if __name__ == "__main__":
                                            MLP_globals.hidden_size,
                                            model_name,
                                            system_used)
-            dataset = dataReader.SparseMatrixDataset(csv_path)
-            runners.predict(model, dataset)
+            validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
+            name = "mlp_{}epochs".format(MLP_globals.nb_epochs)
+            runners.plot_prediction_dispersion(model, validation_dataset, name)
             
 
     elif model_used == "mlp":

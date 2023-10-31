@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 import MLP.globals as globals
 from tqdm import tqdm
 import numpy as np
+import model_runners as runners
 
 class MlpPredictor(torch.nn.Module):
     def __init__(self, activation_fn, 
@@ -59,20 +60,20 @@ def train(model : MlpPredictor, epoch, train_loader : DataLoader, loss_fn, optim
         
     return costTbl, count_tbl
 
-def validation(model : MlpPredictor, validation_loader, loss_fn):
+def test(model : MlpPredictor, test_loader, loss_fn):
     model.eval()
     test_loss = 0
     with torch.no_grad():
-        for batch in tqdm(validation_loader, ncols=75):
+        for batch in tqdm(test_loader, ncols=75):
             (x, y) = batch
             y_pred = model(x)
             test_loss += loss_fn(y_pred, y)
-    test_loss /= len(validation_loader)
+    test_loss /= len(test_loader)
     print('Test set: Avg. loss: {:.4f}\n'.format(test_loss, end=""))
     return test_loss
 
-def fit(tbl_test_losses : list, tbl_train_losses : list, tbl_train_counter : list, model, train_loader, validation_loader, optimizer, loss_fn):
-    test_losses = validation(model, validation_loader, loss_fn)
+def fit(tbl_test_losses : list, tbl_train_losses : list, tbl_train_counter : list, model, train_loader, test_loader, validation_dataset, optimizer, loss_fn):
+    test_losses = test(model, test_loader, loss_fn)
     tbl_test_losses.append(test_losses)
     for epoch in range(1, globals.nb_epochs + 1):
         #Training the model
@@ -81,8 +82,13 @@ def fit(tbl_test_losses : list, tbl_train_losses : list, tbl_train_counter : lis
         tbl_train_counter.append(train_counter)
 
         #Test
-        test_losses = validation(model, validation_loader, loss_fn)
+        test_losses = test(model, test_loader, loss_fn)
         tbl_test_losses.append(test_losses)
+
+        #Validation
+        if epoch%10 == 0:
+            name = "mlp_{}".format(globals.nb_epochs)
+            runners.plot_prediction_dispersion(model, validation_dataset, name)
     
     s = getShape(tbl_train_counter)
     tbl_train_counter = reshapeFromShape(tbl_train_counter, s)
