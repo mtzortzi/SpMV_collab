@@ -69,16 +69,28 @@ Support Vector Regression (SVR) is based on Support Vector Machines (SVM). Witho
 In our project we use SVR in order to find a model by using the kernel trick to make prediction of the GFLOPs and the energy efficiency or our system given sparse matrix features
 ## Folders and file architectures
 ### Dataset
-zza
+In the Dataset folder you will find all the data that is needed for us to train our models. In addition to that you can find some python scripts that aims to reshape data and split dataset. The dataset is splited in a way that each row that corresponds to a given system will in their own csv file. Also some data samples have been added in order to have a better view of the real data.
 
 ### Saved models
-
+The saved_model folder is where we store all the results from our trained model. You will find given on the system that our model was trained the binary file of the corresponding model as well as a plot that sums up the training history.
 
 ### Models
+For each model that is implemented in this projet, a specific folder is created where the following is stored :
+* model.py : this is the file where the model class as well as the train function and other functianlities relative to the model is written.
+* globals.py : this is the file where all the parameters fo the model are stored.
 
 
 ### Main program
+The main program consist of several bricks to work. First it retrives parameters from the command line in order to work. Then given of those parameters parsed the corresponding runner is called from the model_runner.py file. Also from this file before runnning the program data is preprocessed from the dataReader.py file. In this file we extract the corresponding features from our dataset :
+* A_mem_footprint
+* avg_nz_row
+* skew_coeff
+* avg_num_neighbours
+* cross_row_similarity
+* avg_bandwidth_scaled
+* system
 
+All of these features needs to be scaled from 0 to 1 (except the avg_bandwidth_scaled that is already scaled and system that is a string). We scale our data in order to increase stability in the learning process. For the system feature, given the fact that it's a string we used a one hot encoding system, where we retrived each unique class and associate it a unique number in [0, nb_class - 1].
 
 
 ## How to make it work on your computer
