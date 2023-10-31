@@ -9,7 +9,7 @@ from torch.utils.data.sampler import SubsetRandomSampler
 from torch.utils.data import DataLoader, Dataset
 import matplotlib.pyplot as plt
 import numpy as np
-from globals import MODEL_PATH
+from globals import MODEL_PATH, DATA_PATH
 import dataReader as db
 import utils_func
 
@@ -48,24 +48,37 @@ def run_mlp(activation_function,
 
     # Creating dataset for train and validation
     train_sampler = SubsetRandomSampler(train_indices)
-    valid_sampler = SubsetRandomSampler(val_indices)
+    test_sampler = SubsetRandomSampler(val_indices)
     train_loader = DataLoader(dataset,sampler=train_sampler)
-    validation_loader = DataLoader(dataset, sampler=valid_sampler)
+    test_loader = DataLoader(dataset, sampler=test_sampler)
 
+    csv_path_validation = DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system)
+    validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
+
+    #Fitting the neural network
     (tbl_train_counter, tbl_train_losses, tbl_test_losses) = MLP_model.fit([],
                                                                            [],
                                                                            [],
                                                                            mlp_model,
                                                                            train_loader,
-                                                                           validation_loader,
+                                                                           test_loader,
+                                                                           validation_dataset,
                                                                            optimizer,
-                                                                           MLP_globals.loss_fn)
+                                                                           MLP_globals.loss_fn,
+                                                                           system)
     
+    #Saving the last model
     saved_model_path = MODEL_PATH + "{}/mlp_{}epochs".format(system, n_iteration)
     torch.save(mlp_model.state_dict(), saved_model_path)
+
+    #Ploting prediction scaterring
+    name = "mlp_{}epochs".format(MLP_globals.nb_epochs)
+    path = MODEL_PATH + "{}".format(system)
+    plot_prediction_dispersion(mlp_model, validation_dataset, name, path)
+
+    #Ploting loss history
     idx_test_counter = (len(tbl_train_counter)-1)//n_iteration
     test_counter = [tbl_train_counter[idx_test_counter*i] for i in range(n_iteration + 1)]
-
     plt.plot(tbl_train_counter, tbl_train_losses, 'bo')
     plt.scatter(test_counter, tbl_test_losses, color ='red', zorder=2)
     plt.legend(['Train Loss', 'Test Loss'], loc = 'upper right')
@@ -153,12 +166,20 @@ def plot_prediction_dispersion(model:torch.nn.Module, validation_dataset:db.Spar
     gflops_expectations = [val[0] for val in expectations[:]]
     energy_efficiency_expectations = [val[1] for val in expectations[:]]
 
-    identity = np.arange(0, length_dataset, 10)
+    # print("gflops predictions :", gflops_predictions)
+    # print("gflops_exepectations :", gflops_expectations)
+    # print("energy efficiency predictions :", energy_efficiency_predictions)
+    # print("energy efficiency expectations :", energy_efficiency_expectations)
+
+    identity_gflops = np.arange(min(gflops_expectations), max(gflops_expectations), 10)
+    identity_energy_efficiency = np.arange(min(energy_efficiency_expectations), max(energy_efficiency_expectations), 0.01)
 
     plt.scatter(gflops_predictions, gflops_expectations, color="blue")
-    plt.plot(identity, identity, color="red")
-    plt.savefig("gflops_scattering_{}.png".format(name))
+    plt.plot(identity_gflops, identity_gflops, color="red")
+    plt.savefig("{}/gflops_scattering_{}.png".format(path, name))
+
+    plt.clf()
 
     plt.scatter(energy_efficiency_predictions, energy_efficiency_expectations, color="blue")
-    plt.plot(identity, identity, color ="red")
-    plt.savefig("energy_efficiency_scattering_{}.png".format(name))
+    plt.plot(identity_energy_efficiency, identity_energy_efficiency, color ="red")
+    plt.savefig("{}/energy_efficiency_scattering_{}.png".format(path, name))

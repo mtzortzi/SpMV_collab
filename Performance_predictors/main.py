@@ -43,8 +43,9 @@ if __name__ == "__main__":
                                            model_name,
                                            system_used)
             validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
-            name = "mlp_{}epochs".format(MLP_globals.nb_epochs)
-            runners.plot_prediction_dispersion(model, validation_dataset, name)
+            name = "mlp_{}epochs_load".format(MLP_globals.nb_epochs)
+            path = g.MODEL_PATH + "{}".format(system_used)
+            runners.plot_prediction_dispersion(model, validation_dataset, name, path)
             
 
     elif model_used == "mlp":

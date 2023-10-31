@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
+from globals import MODEL_PATH
+from torch.utils.data import DataLoader, Dataset
 import MLP.globals as globals
 from tqdm import tqdm
 import numpy as np
@@ -72,7 +73,17 @@ def test(model : MlpPredictor, test_loader, loss_fn):
     print('Test set: Avg. loss: {:.4f}\n'.format(test_loss, end=""))
     return test_loss
 
-def fit(tbl_test_losses : list, tbl_train_losses : list, tbl_train_counter : list, model, train_loader, test_loader, validation_dataset, optimizer, loss_fn):
+def fit(tbl_test_losses : list, 
+        tbl_train_losses : list, 
+        tbl_train_counter : list, 
+        model : MlpPredictor, 
+        train_loader : DataLoader, 
+        test_loader : DataLoader, 
+        validation_dataset : Dataset, 
+        optimizer, 
+        loss_fn, 
+        system : str):
+    
     test_losses = test(model, test_loader, loss_fn)
     tbl_test_losses.append(test_losses)
     for epoch in range(1, globals.nb_epochs + 1):
@@ -87,8 +98,11 @@ def fit(tbl_test_losses : list, tbl_train_losses : list, tbl_train_counter : lis
 
         #Validation
         if epoch%10 == 0:
-            name = "mlp_{}".format(globals.nb_epochs)
-            runners.plot_prediction_dispersion(model, validation_dataset, name)
+            name = "mlp_{}epochs".format(epoch)
+            path = MODEL_PATH + "{}".format(system)
+            saved_model_path = MODEL_PATH + "{}/mlp_{}epochs".format(system, epoch)
+            runners.plot_prediction_dispersion(model, validation_dataset, name, path)
+            torch.save(model.state_dict(), saved_model_path)
     
     s = getShape(tbl_train_counter)
     tbl_train_counter = reshapeFromShape(tbl_train_counter, s)
