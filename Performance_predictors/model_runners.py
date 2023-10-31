@@ -90,12 +90,11 @@ def predict(model, dataset : db.SparseMatrixDataset):
     Y_pred = model(X)
 
     loss = torch.nn.MSELoss()
-    percentage_loss = torch.nn.L1Loss()
 
     print("Prediction (scaled) : {}".format(Y_pred))
     print("Expected (scaled) : {}".format(Y))
     print("Loss (scaled) : {}".format(loss(Y_pred, Y)))
-    print("Loss % (scaled) : {}".format(percentage_loss(Y_pred, Y)))
+    print("Loss % (scaled) : {}".format(utils.MAPELoss(Y_pred, Y)))
           
     
     gflops_predicted_unscaled = torch.tensor(dataset.scaler_gflops.inverse_transform(Y_pred[0].detach().view(1, -1)))
@@ -110,7 +109,7 @@ def predict(model, dataset : db.SparseMatrixDataset):
     print("Prediction : {}".format(prediction))
     print("Expected : {}".format(expected))
     print("Loss : {}".format(loss(prediction, expected)))
-    print("Loss % : {}".format(percentage_loss(prediction, expected)))
+    print("Loss % : {}".format(utils.MAPELoss(prediction, expected)))
     return prediction
 
 def run_svr(kernel, C, epsilon, gamma, csv_path):
