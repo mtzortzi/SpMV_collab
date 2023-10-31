@@ -7,9 +7,9 @@ import argparse
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--model', metavar='MODEL', required=True, help='Model to run')
+    parser.add_argument('-m', '--model', metavar='MODEL', required=True, help='Model name to run')
     parser.add_argument('-s', '--system', metavar='SYSTEM', required=True, help='CPU/GPU name')
-    parser.add_argument('-l', '--load', action='store_true')
+    parser.add_argument('-l', '--load', action='store_true', help='Load the model described from it\'s hyperparameters in it\'s corresponfing global.py file and the -m parameter described above')
 
     args = parser.parse_args()
     args_data = vars(args)
