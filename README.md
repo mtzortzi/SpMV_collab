@@ -46,36 +46,24 @@ The aim of this project is to build machine learning models to predict the perfo
 | avg_bandwidth_scaled | This is scaled, divided by number of columns of matrix, in order to be in range [0,1] for all matrices |
 | std_bandwidth_scaled  | Scaled standard deviation |
 | skew_coeff           | Skew coefficient of row size, calculates how unbalanced a matrix is Calculated as (max-avg)/avg (of row size) |
-| avg_num_neighbours | Average of neighbors per row.
-We define as “neighbors” of a nonzero element all the other same-
-row elements residing in a predetermined maximum column distance of 1, left or right of the element. (range [0-2])
-(Captures spatial locality on vector x) |
-| cross_row_similarity | Average of cross row similarity, which expresses a measure of similarity between adjacent rows. 
-It calculates how many nonzeros reside in a column distance of one, which means either the same column, or the adjacent left and right ones. (range [0-1])
-(Captures temporal locality on vector x) |
+| avg_num_neighbours | Average of neighbors per row. We define as “neighbors” of a nonzero element all the other same-row elements residing in a predetermined maximum column distance of 1, left or right of the element. (range [0-2]) (Captures spatial locality on vector x) |
+| cross_row_similarity | Average of cross-row similarity, which expresses a measure of similarity between adjacent rows. It calculates how many nonzeros reside in a column distance of one, which means either the same column or the adjacent left and right ones. (range [0-1]) (Captures temporal locality on vector x) |
 | implementation | SpMV format |
 | time | Time in microseconds (I think?) - ignore it - gflops is more important |
-| gflops | Performance of SpMV, measured in GFLOPs
-For SpMV it is calculated as
-2*nz / time |
+| gflops | Performance of SpMV, measured in GFLOPs For SpMV it is calculated as 2*nz / time |
 | W_avg | Watt of device during execution of SpMV |
 | J_estimated | Joules consumed during execution of SpMV |
 | System | Device (listed above) |
 | Arch | GPU or CPU or FPGA |
 | friends | - |
-| impl_arch | Combination of implementation + device columns 
-E.g. “( Naive CSR )  AMD-EPYC-24” |
+| impl_arch | Combination of implementation + device columns E.g. “( Naive CSR )  AMD-EPYC-24” |
 | energy_efficiency | GFLOPs per Watt, an energy efficiency metric |
 | GFLOPs^2-per-W | Another energy efficiency metric, focusing more on performance |
-| crs_categ | Category of cross row similarity feature, in Small, Medium or Large
-( in ranges [0-0.3], [0.3-0.7], [0.7-1] respectively ) |
-| ann_categ | Category of average neighbors feature, in Small, Medium or Large
-( in ranges [0-0.6], [0.6-1.4], [1.4-2] respectively ) |
+| crs_categ | Category of cross row similarity feature, in Small, Medium or Large ( in ranges [0-0.3], [0.3-0.7], [0.7-1] respectively ) |
+| ann_categ | Category of average neighbors feature, in Small, Medium or Large ( in ranges [0-0.6], [0.6-1.4], [1.4-2] respectively ) |
 | regularity | Combination of previous two (crs_categ, ann_categ) |
-| anr_categ | Range of average nonzeros per row, each matrix will be in one of these
-[0-15], [15-40], [40-75], [75-150], [150-510] |
-| skew_categ | Range of skew coefficient, each matrix will be in one of these
-[0-1.5], [1.5-50], [50-250], [250-3000], [3000-10000] |
+| anr_categ | Range of average nonzeros per row, each matrix will be in one of these [0-15], [15-40], [40-75], [75-150], [150-510] |
+| skew_categ | Range of skew coefficient, each matrix will be in one of these [0-1.5], [1.5-50], [50-250], [250-3000], [3000-10000] |
 
 
 
