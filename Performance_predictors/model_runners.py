@@ -8,10 +8,13 @@ import torch
 from torch.utils.data.sampler import SubsetRandomSampler
 from torch.utils.data import DataLoader, Dataset
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import numpy as np
 from globals import MODEL_PATH, DATA_PATH
 import dataReader as db
+from sklearn import preprocessing
 import utils_func
+import seaborn as sns
 
 def run_mlp(activation_function,
             nb_hidden_layers,
@@ -88,10 +91,8 @@ def run_mlp(activation_function,
     saved_figure_path = MODEL_PATH + "/{}/mlp_{}_{}epochs.png".format(system, system, n_iteration)
     plt.savefig(saved_figure_path)
 
-def predict(model, dataset : db.SparseMatrixDataset, index):
-    (X, Y)  = dataset[index]
-
-    Y_pred = model(X)
+def predict(model, input, scaler_gflops:preprocessing.MinMaxScaler, scaler_energy_efficiency:preprocessing.MinMaxScaler):
+    Y_pred = model(input.float())
 
     # loss = torch.nn.MSELoss()
 
@@ -101,8 +102,8 @@ def predict(model, dataset : db.SparseMatrixDataset, index):
     # print("Loss % (scaled) : {}".format(utils_func.MAPELoss(Y_pred, Y)))
           
     
-    gflops_predicted_unscaled = torch.tensor(dataset.scaler_gflops.inverse_transform(Y_pred[0].detach().view(1, -1)))
-    energy_efficiency_predicted_unscaled = torch.tensor(dataset.scaler_energy_efficiency.inverse_transform(Y_pred[1].detach().view(1, -1)))
+    gflops_predicted_unscaled = torch.tensor(scaler_gflops.inverse_transform(Y_pred[0].detach().view(1, -1)))
+    energy_efficiency_predicted_unscaled = torch.tensor(scaler_energy_efficiency.inverse_transform(Y_pred[1].detach().view(1, -1)))
     prediction = torch.cat((gflops_predicted_unscaled, energy_efficiency_predicted_unscaled), 1)
 
 
@@ -147,15 +148,20 @@ def load_svr_model(kernel, C, epsilon, gamma, name, system):
     return model
 
 
-def plot_prediction_dispersion(model:torch.nn.Module, validation_dataset:db.SparseMatrixDataset, name:str, path:str):
+def plot_prediction_dispersion(model:torch.nn.Module, 
+                               validation_dataset:db.SparseMatrixDataset,
+                               name:str, 
+                               path:str):
+    
+    
     length_dataset = len(validation_dataset)
     predictions = []
     expectations = []
     for idx in range(length_dataset):
-        Y = validation_dataset[idx][1]
-        prediction = predict(model, validation_dataset, idx)
+        (X, Y) = validation_dataset[idx]
+        prediction = predict(model, X, validation_dataset.scaler_gflops, validation_dataset.scaler_energy_efficiency)
         gflops_unscaled = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(Y[0].view(1, -1)))
-        energy_efficiency_unscaled = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(Y[0].view(1, -1)))
+        energy_efficiency_unscaled = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(Y[1].view(1, -1)))
         expectation = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1) 
         predictions.append(prediction.numpy().flatten().tolist())
         expectations.append(expectation.numpy().flatten().tolist())
@@ -174,12 +180,14 @@ def plot_prediction_dispersion(model:torch.nn.Module, validation_dataset:db.Spar
     identity_gflops = np.arange(min(gflops_expectations), max(gflops_expectations), 10)
     identity_energy_efficiency = np.arange(min(energy_efficiency_expectations), max(energy_efficiency_expectations), 0.01)
 
-    plt.scatter(gflops_predictions, gflops_expectations, color="blue")
-    plt.plot(identity_gflops, identity_gflops, color="red")
-    plt.savefig("{}/gflops_scattering_{}.png".format(path, name))
+    implementations = validation_dataset.dataframe["implementation"]
+    
+    sns.scatterplot(x=gflops_predictions, y=gflops_expectations, hue=implementations)
+    plot = sns.lineplot(x=identity_gflops, y=identity_gflops, color="red")
+    plot.get_figure().savefig("{}/gflops_scattering_{}.png".format(path, name))
 
     plt.clf()
 
-    plt.scatter(energy_efficiency_predictions, energy_efficiency_expectations, color="blue")
-    plt.plot(identity_energy_efficiency, identity_energy_efficiency, color ="red")
-    plt.savefig("{}/energy_efficiency_scattering_{}.png".format(path, name))
+    sns.scatterplot(x=energy_efficiency_predictions, y=energy_efficiency_expectations, hue=implementations)
+    plot = sns.lineplot(x=identity_energy_efficiency, y=identity_energy_efficiency, color="red")
+    plot.get_figure().savefig("{}/energy_efficiency_scattering_{}.png".format(path, name))
