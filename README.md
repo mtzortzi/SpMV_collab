@@ -36,12 +36,15 @@ The aim of this project is to build machine learning models to predict the perfo
 | m             | Rows of matrix     |
 | n             | Columns of matrix  |
 | nz            | Nonzeros of matrix |
-|               |               |
-|               |               |
-|               |               |
-|               |               |
-|               |               |
-|               |               |
+| density       | Density of matrix, nz / (m*n) (percentage) |
+| A_mem_footprint | Memory footprint of matrix in MBs (for CSR representation of matrix) |
+| mem_range    | It will be one of the following, it was used to group many matrices in the same memory range [4-8], [8-16], [16-32], [32-64], [64-128], [128-256], [256-512], [512-1024], [1024-2048] |
+| 
+
+
+
+
+
 
 
 
