@@ -27,17 +27,70 @@ The aim of this project is to build machine learning models to predict the perfo
      > Filename: [best_format_runs_March_2023.csv](https://github.com/mtzortzi/SpMV_collab/blob/main/Performance_predictors/Dataset/data/best_format_runs_March_2023.csv)
 
 **35 columns of the two result datasets**
-| Feature |  Description | 
-| ------------- | ------------- |
-| mtx_name      |  -            |
-| distribution  |  -            |
-| placement     |  -            |
-| seed          |  -            |
+| Feature       |  Description | 
+| ------------- | -------------------|
+| mtx_name      |        -           |
+| distribution  |        -           |
+| placement     |        -           |
+| seed          |        -           |
+| m             | Rows of matrix     |
+| n             | Columns of matrix  |
+| nz            | Nonzeros of matrix |
+| density       | Density of matrix, nz / (m*n) (percentage) |
+| A_mem_footprint | Memory footprint of matrix in MBs (for CSR representation of matrix) |
+| mem_range    | It will be one of the following, it was used to group many matrices in the same memory range [4-8], [8-16], [16-32], [32-64], [64-128], [128-256], [256-512], [512-1024], [1024-2048] |
+| avg_nz_row   | Average number of nonzeros per row |
+| std_nz_row   | Standard deviation of nonzeros per row |
+| avg_bandwidth | Average bandwidth of matrix, bandwidth is the distance between the first and the last element of a row |
+| std_bandwidth | Standard deviation of bandwidth |
+| avg_bandwidth_scaled | This is scaled, divided by number of columns of matrix, in order to be in range [0,1] for all matrices |
+| std_bandwidth_scaled  | Scaled standard deviation |
+| skew_coeff           | Skew coefficient of row size, calculates how unbalanced a matrix is Calculated as (max-avg)/avg (of row size) |
+| avg_num_neighbours | Average of neighbors per row. We define as “neighbors” of a nonzero element all the other same-row elements residing in a predetermined maximum column distance of 1, left or right of the element. (range [0-2]) (Captures spatial locality on vector x) |
+| cross_row_similarity | Average of cross-row similarity, which expresses a measure of similarity between adjacent rows. It calculates how many nonzeros reside in a column distance of one, which means either the same column or the adjacent left and right ones. (range [0-1]) (Captures temporal locality on vector x) |
+| implementation | SpMV format |
+| time | Time in microseconds (I think?) - ignore it - gflops is more important |
+| gflops | Performance of SpMV, measured in GFLOPs For SpMV it is calculated as 2*nz / time |
+| W_avg | Watt of device during execution of SpMV |
+| J_estimated | Joules consumed during execution of SpMV |
+| System | Device (listed above) |
+| Arch | GPU or CPU or FPGA |
+| friends | - |
+| impl_arch | Combination of implementation + device columns E.g. “( Naive CSR )  AMD-EPYC-24” |
+| energy_efficiency | GFLOPs per Watt, an energy efficiency metric |
+| GFLOPs^2-per-W | Another energy efficiency metric, focusing more on performance |
+| crs_categ | Category of cross row similarity feature, in Small, Medium or Large ( in ranges [0-0.3], [0.3-0.7], [0.7-1] respectively ) |
+| ann_categ | Category of average neighbors feature, in Small, Medium or Large ( in ranges [0-0.6], [0.6-1.4], [1.4-2] respectively ) |
+| regularity | Combination of previous two (crs_categ, ann_categ) |
+| anr_categ | Range of average nonzeros per row, each matrix will be in one of these [0-15], [15-40], [40-75], [75-150], [150-510] |
+| skew_categ | Range of skew coefficient, each matrix will be in one of these [0-1.5], [1.5-50], [50-250], [250-3000], [3000-10000] |
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## Running models
 ### MLP
-Multi-Layer Perceptron (MLP) is widely used in data science in order to make predictions given a set of features. Generally speaking MLP neural networks are characterized by several features :
+Multi-Layer Perceptron (MLP) is widely used in data science in order to make predictions given a set of features. Generally speaking, MLP neural networks are characterized by several features :
 * Input dimension
 * Output dimension
 * Number of hidden layers
