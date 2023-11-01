@@ -28,11 +28,21 @@ The aim of this project is to build machine learning models to predict the perfo
 
 **35 columns of the two result datasets**
 | Feature |  Description | 
-| ------------- | ------------- |
-| mtx_name      |  -            |
-| distribution  |  -            |
-| placement     |  -            |
-| seed          |  -            |
+| ------------- | -------------     |
+| mtx_name      |  -                |
+| distribution  |  -                |
+| placement     |  -                |
+| seed          |  -                |
+| m             | Rows of matrix    |
+| n             | Columns of matrix  |
+| nz            | Nonzeros of matrix |
+|               |               |
+|               |               |
+|               |               |
+|               |               |
+|               |               |
+|               |               |
+
 
 
 ## Running models
