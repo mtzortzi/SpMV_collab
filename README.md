@@ -27,13 +27,13 @@ The aim of this project is to build machine learning models to predict the perfo
      > Filename: [best_format_runs_March_2023.csv](https://github.com/mtzortzi/SpMV_collab/blob/main/Performance_predictors/Dataset/data/best_format_runs_March_2023.csv)
 
 **35 columns of the two result datasets**
-| Feature |  Description | 
-| ------------- | -------------     |
-| mtx_name      |  -                |
-| distribution  |  -                |
-| placement     |  -                |
-| seed          |  -                |
-| m             | Rows of matrix    |
+| Feature       |  Description | 
+| ------------- | -------------------|
+| mtx_name      |        -           |
+| distribution  |        -           |
+| placement     |        -           |
+| seed          |        -           |
+| m             | Rows of matrix     |
 | n             | Columns of matrix  |
 | nz            | Nonzeros of matrix |
 |               |               |
