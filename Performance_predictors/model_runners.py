@@ -6,14 +6,12 @@ import SVR.model as SVR_model
 import dataReader
 import torch
 from torch.utils.data.sampler import SubsetRandomSampler
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
 import numpy as np
 from globals import MODEL_PATH, DATA_PATH
 import dataReader as db
 from sklearn import preprocessing
-import utils_func
 import seaborn as sns
 
 def run_mlp(activation_function,
@@ -118,10 +116,12 @@ def predict_mlp(model, input, scaler_gflops:preprocessing.MinMaxScaler, scaler_e
     return prediction
 
 def run_svr(kernel, C, epsilon, gamma, csv_path):
+    
     #TODO: get random split of size n < 10000 when training svr
     dataset = dataReader.SparseMatrixDataset(csv_path)
+
     svr_model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma)
-    SVR_model.train_SVR(svr_model, dataset[:20000])
+    SVR_model.train_SVR(svr_model, dataset)
     return svr_model 
 
 def load_mlp_model(activation_fn, 
