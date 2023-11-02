@@ -185,6 +185,9 @@ def plot_prediction_dispersion(model:torch.nn.Module,
     sns.regplot(x=gflops_predictions, y=gflops_expectations, scatter=False, fit_reg=True, color="blue")
     sns.scatterplot(x=gflops_predictions, y=gflops_expectations, hue=implementations)
     plot = sns.lineplot(x=identity_gflops, y=identity_gflops, color="red")
+    plt.xlabel("Predictions")
+    plt.ylabel("Expectations")
+    plt.title("gflops_scattering")
     plot.get_figure().savefig("{}/gflops_scattering_{}.png".format(path, name))
 
     plt.clf()
@@ -192,5 +195,8 @@ def plot_prediction_dispersion(model:torch.nn.Module,
     sns.regplot(x=energy_efficiency_predictions, y=energy_efficiency_expectations, scatter=False, fit_reg=True, color="blue")
     sns.scatterplot(x=energy_efficiency_predictions, y=energy_efficiency_expectations, hue=implementations)
     plot = sns.lineplot(x=identity_energy_efficiency, y=identity_energy_efficiency, color="red")
+    plt.xlabel("Predictions")
+    plt.ylabel("Expectations")
+    plt.title("energy_efficieny_scattering")
     plot.get_figure().savefig("{}/energy_efficiency_scattering_{}.png".format(path, name))
     plt.clf()
