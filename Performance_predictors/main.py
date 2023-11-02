@@ -60,10 +60,21 @@ if __name__ == "__main__":
         
         
     elif model_used == "svr":
+        print("running Support Vector Regression model")
         csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
-        runners.run_svr(SVR_globals.kernel,
+        model = runners.run_svr(SVR_globals.kernel,
                         SVR_globals.C,
                         SVR_globals.epsilon,
                         SVR_globals.gamma,
                         csv_path)
-        print("running Support Vector Regression model")
+        csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
+        validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
+        X = validation_dataset[:][0].numpy()
+        Y = validation_dataset[:][1].numpy()
+        input = [list(X[0])]
+        print(input)
+        y_pred = model(input)
+        print(y_pred)
+        print(validation_dataset[0])
+
+        

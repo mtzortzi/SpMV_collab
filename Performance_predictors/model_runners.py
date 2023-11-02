@@ -91,7 +91,7 @@ def run_mlp(activation_function,
     saved_figure_path = MODEL_PATH + "/{}/mlp_{}_{}epochs.png".format(system, system, n_iteration)
     plt.savefig(saved_figure_path)
 
-def predict(model, input, scaler_gflops:preprocessing.MinMaxScaler, scaler_energy_efficiency:preprocessing.MinMaxScaler):
+def predict_mlp(model, input, scaler_gflops:preprocessing.MinMaxScaler, scaler_energy_efficiency:preprocessing.MinMaxScaler):
     Y_pred = model(input.float())
 
     # loss = torch.nn.MSELoss()
@@ -118,10 +118,11 @@ def predict(model, input, scaler_gflops:preprocessing.MinMaxScaler, scaler_energ
     return prediction
 
 def run_svr(kernel, C, epsilon, gamma, csv_path):
+    #TODO: get random split of size n < 10000 when training svr
     dataset = dataReader.SparseMatrixDataset(csv_path)
     svr_model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma)
-    SVR_model.train_SVR(svr_model, dataset)
-
+    SVR_model.train_SVR(svr_model, dataset[:20000])
+    return svr_model 
 
 def load_mlp_model(activation_fn, 
                  nb_hidden_layers,
@@ -147,7 +148,6 @@ def load_svr_model(kernel, C, epsilon, gamma, name, system):
     model.load_state_dict(torch.load(model_path))
     return model
 
-
 def plot_prediction_dispersion(model:torch.nn.Module, 
                                validation_dataset:db.SparseMatrixDataset,
                                name:str, 
@@ -159,7 +159,7 @@ def plot_prediction_dispersion(model:torch.nn.Module,
     expectations = []
     for idx in range(length_dataset):
         (X, Y) = validation_dataset[idx]
-        prediction = predict(model, X, validation_dataset.scaler_gflops, validation_dataset.scaler_energy_efficiency)
+        prediction = predict_mlp(model, X, validation_dataset.scaler_gflops, validation_dataset.scaler_energy_efficiency)
         gflops_unscaled = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(Y[0].view(1, -1)))
         energy_efficiency_unscaled = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(Y[1].view(1, -1)))
         expectation = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1) 
@@ -171,11 +171,6 @@ def plot_prediction_dispersion(model:torch.nn.Module,
 
     gflops_expectations = [val[0] for val in expectations[:]]
     energy_efficiency_expectations = [val[1] for val in expectations[:]]
-
-    # print("gflops predictions :", gflops_predictions)
-    # print("gflops_exepectations :", gflops_expectations)
-    # print("energy efficiency predictions :", energy_efficiency_predictions)
-    # print("energy efficiency expectations :", energy_efficiency_expectations)
 
     identity_gflops = np.arange(min(gflops_expectations), max(gflops_expectations), 10)
     identity_energy_efficiency = np.arange(min(energy_efficiency_expectations), max(energy_efficiency_expectations), 0.01)

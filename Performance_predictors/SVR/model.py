@@ -1,23 +1,28 @@
 from sklearn.svm import SVR
 import torch
-
+import numpy as np
+from tqdm import tqdm
 
 class SvrPredictor(torch.nn.Module):
     def __init__(self, kernel, 
                  C,
                  epsilon,
                  gamma):
+        super(SvrPredictor, self).__init__()
         self.regressor = SVR(kernel=kernel, C=C, epsilon=epsilon, gamma=gamma)
     
     def forward(self, x):
         return self.regressor.predict(x)
 
 def train_SVR(model:SvrPredictor, dataset):
-    # TODO: retrieve dataset
-    print("X = {}\nY = {}".format(dataset[:][0], dataset[:][1]))
-    X = dataset[:][0]
-    Y = dataset[:][1]
-    model.regressor.fit(X, Y)
+    X = dataset[:][0].numpy()
+    Y = dataset[:][1].numpy()
+    out = np.array([])
+    for a in Y:
+        out = np.append(out, a[0])
+    model.regressor.fit(X, out)
+    return model
+    
 
 
 # regressor = SVR(kernel='rbf', C=10, epsilon=0.01, gamma=0.25)
