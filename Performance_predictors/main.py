@@ -4,7 +4,9 @@ import SVR.globals as SVR_globals
 import dataReader
 import globals as g
 import argparse
+import numpy as np
 import utils_func
+import torch
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -62,6 +64,8 @@ if __name__ == "__main__":
     elif model_used == "svr":
         print("running Support Vector Regression model")
         csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
+        
+        #TODO: I'm taking raw data from dataet, no scaling ?
         model = runners.run_svr(SVR_globals.kernel,
                         SVR_globals.C,
                         SVR_globals.epsilon,
@@ -69,12 +73,17 @@ if __name__ == "__main__":
                         csv_path)
         csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
         validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
+        
+        #TODO: Same thing here
         X = validation_dataset[:][0].numpy()
         Y = validation_dataset[:][1].numpy()
-        input = [list(X[0])]
-        print(input)
+        print(X.shape)
+        input = X
         y_pred = model(input)
-        print(y_pred)
-        print(validation_dataset[0])
+        print("prediction :", y_pred[0])
+        print("expectation :", validation_dataset[0][1][0].numpy())
+        prediction = torch.tensor(y_pred[0])
+        expectation = validation_dataset[0][1][0]
+        print("Error :{}%".format(utils_func.MAPELoss(prediction, expectation).numpy()*100))
 
         
