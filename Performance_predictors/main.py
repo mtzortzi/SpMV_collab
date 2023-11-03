@@ -47,7 +47,7 @@ if __name__ == "__main__":
             validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
             name = "mlp_{}epochs_load".format(MLP_globals.nb_epochs)
             path = g.MODEL_PATH + "{}".format(system_used)
-            runners.plot_prediction_dispersion(model, validation_dataset, name, path)
+            runners.plot_prediction_dispersion_mlp(model, validation_dataset, name, path)
             
 
     elif model_used == "mlp":
@@ -65,7 +65,6 @@ if __name__ == "__main__":
         print("running Support Vector Regression model")
         csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
         
-        #TODO: I'm taking raw data from dataet, no scaling ?
         model = runners.run_svr(SVR_globals.kernel,
                         SVR_globals.C,
                         SVR_globals.epsilon,
@@ -74,7 +73,6 @@ if __name__ == "__main__":
         csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
         validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
         
-        #TODO: Same thing here
         X = validation_dataset[:][0].numpy()
         Y = validation_dataset[:][1].numpy()
         print(X.shape)

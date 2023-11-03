@@ -53,7 +53,7 @@ def run_mlp(activation_function,
     train_loader = DataLoader(dataset,sampler=train_sampler)
     test_loader = DataLoader(dataset, sampler=test_sampler)
 
-    csv_path_validation = DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system)
+    csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}.csv".format(system)
     validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
 
     #Fitting the neural network
@@ -75,7 +75,7 @@ def run_mlp(activation_function,
     #Ploting prediction scaterring
     name = "mlp_{}epochs".format(MLP_globals.nb_epochs)
     path = MODEL_PATH + "{}".format(system)
-    plot_prediction_dispersion(mlp_model, validation_dataset, name, path)
+    plot_prediction_dispersion_mlp(mlp_model, validation_dataset, name, path)
 
     #Ploting loss history
     idx_test_counter = (len(tbl_train_counter)-1)//n_iteration
@@ -148,7 +148,7 @@ def load_svr_model(kernel, C, epsilon, gamma, name, system):
     model.load_state_dict(torch.load(model_path))
     return model
 
-def plot_prediction_dispersion(model:torch.nn.Module, 
+def plot_prediction_dispersion_mlp(model:torch.nn.Module, 
                                validation_dataset:db.SparseMatrixDataset,
                                name:str, 
                                path:str):
@@ -195,3 +195,4 @@ def plot_prediction_dispersion(model:torch.nn.Module,
     plt.title("energy_efficieny_scattering")
     plot.get_figure().savefig("{}/energy_efficiency_scattering_{}.png".format(path, name))
     plt.clf()
+
