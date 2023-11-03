@@ -26,7 +26,7 @@ class MlpPredictor(torch.nn.Module):
 
         self.allLayers = torch.nn.Sequential(self.input_layer, *self.hiddenLayers, self.finalLayer)
 
-    def forward(self, x):
+    def forward(self, x) -> torch.Tensor:
         return self.allLayers(x)
     
 
