@@ -53,6 +53,8 @@ class SparseMatrixDataset(Dataset):
         # Adding the scaled glops and energy_efficiency to output
         self.y = torch.cat((gflops_scaled, energy_efficiency_scaled), 1)
 
+    
+
     def scale_row(self, row):
         scaler = preprocessing.MinMaxScaler()
         row_scaled = scaler.fit_transform(row.reshape(-1, 1))

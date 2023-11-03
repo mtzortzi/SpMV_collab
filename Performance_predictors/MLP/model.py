@@ -101,7 +101,7 @@ def fit(tbl_test_losses : list,
             name = "mlp_{}epochs".format(epoch)
             path = MODEL_PATH + "{}".format(system)
             saved_model_path = MODEL_PATH + "{}/mlp_{}epochs".format(system, epoch)
-            runners.plot_prediction_dispersion(model, validation_dataset, name, path)
+            runners.plot_prediction_dispersion_mlp(model, validation_dataset, name, path)
             torch.save(model.state_dict(), saved_model_path)
     
     s = getShape(tbl_train_counter)

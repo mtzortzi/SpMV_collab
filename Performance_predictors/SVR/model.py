@@ -1,37 +1,40 @@
 from sklearn.svm import SVR
 import torch
-
+import numpy as np
+from tqdm import tqdm
+from sklearn.linear_model import SGDRegressor
+from sklearn.kernel_approximation import Nystroem, RBFSampler
 
 class SvrPredictor(torch.nn.Module):
     def __init__(self, kernel, 
                  C,
                  epsilon,
                  gamma):
-        self.regressor = SVR(kernel=kernel, C=C, epsilon=epsilon, gamma=gamma)
+        super(SvrPredictor, self).__init__()
+        self.clf = SGDRegressor(verbose=1, 
+                                max_iter=1000, 
+                                epsilon=epsilon, 
+                                early_stopping=True,
+                                shuffle=True)
+        self.feature_map_nystroem = Nystroem(kernel=kernel,
+                                             gamma=gamma,
+                                             random_state=1,
+                                             n_components=7)
+        self.feature_map_RBF = RBFSampler(gamma=gamma, n_components=7)
     
     def forward(self, x):
-        return self.regressor.predict(x)
+        return self.clf.predict(x)
 
 def train_SVR(model:SvrPredictor, dataset):
-    # TODO: retrieve dataset
-    print("X = {}\nY = {}".format(dataset[:][0], dataset[:][1]))
-    X = dataset[:][0]
-    Y = dataset[:][1]
-    model.regressor.fit(X, Y)
+    X = dataset[:][0].numpy()
+    Y = dataset[:][1].numpy()
+    out = np.array([])
+    for a in Y:
+        out = np.append(out, a[0])
 
+    print("shape of input data :", X.shape)
+    data_transformed = model.feature_map_nystroem.fit_transform(X)
 
-# regressor = SVR(kernel='rbf', C=10, epsilon=0.01, gamma=0.25)
-# regressor.fit(X, Y)
-# array = np.array([])
-# array = np.append(array, 11)
-# y_pred = regressor.predict(array.reshape(1, -1))
-# print(sc_Y.inverse_transform(np.array(y_pred).reshape(1, -1)))
-# #y_pred = sc_Y.inverse_transform((regressor.predict(sc_X.transform(array.reshape(1, -1)))))
-# Y_pred = regressor.predict(X)
-
-# plt.scatter(sc_X.inverse_transform(X), sc_Y.inverse_transform(Y), color = 'magenta')
-# plt.plot(sc_X.inverse_transform(X), sc_Y.inverse_transform(Y_pred.reshape(-1, 1)), color = 'green')
-# plt.title('Truth or Bluff (Support Vector Regression Model)')
-# plt.xlabel('Position level')
-# plt.ylabel('Salary')
-# plt.show()
+    model.clf.fit(data_transformed, out)
+    print("score of model :", model.clf.score(data_transformed, out))
+    return model
