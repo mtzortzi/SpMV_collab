@@ -114,10 +114,7 @@ def predict_mlp(model, input, scaler_gflops:preprocessing.MinMaxScaler, scaler_e
     # print("Loss : {}".format(loss(prediction, expected)))
     # print("Loss % : {}".format(utils_func.MAPELoss(prediction, expected)))
     return prediction
-
 def run_svr(kernel, C, epsilon, gamma, csv_path):
-    
-    #TODO: get random split of size n < 10000 when training svr
     dataset = dataReader.SparseMatrixDataset(csv_path)
 
     svr_model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma)
@@ -147,6 +144,36 @@ def load_svr_model(kernel, C, epsilon, gamma, name, system):
     model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma)
     model.load_state_dict(torch.load(model_path))
     return model
+
+def plot_prediction_dispersion_svr(model:torch.nn.Module,
+                                   validation_dataset:db.SparseMatrixDataset,
+                                   name:str,
+                                   path:str):
+    
+    length_dataset = len(validation_dataset)
+    predictions = []
+    expectations = []
+    for idx in range(length_dataset):
+        (X, Y) = validation_dataset[idx]
+        input = np.array([X.numpy()])
+        y_pred = model(input)
+        y_pred_unscaled = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(y_pred.reshape(-1, 1)))
+        expectation = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(Y[0].view(-1, 1)))
+        predictions.append(y_pred_unscaled.numpy().tolist()[0][0])
+        expectations.append(expectation.numpy().tolist()[0][0])
+    
+    print(predictions)
+    print(expectations)
+
+    implementations = validation_dataset.dataframe["implementation"]
+    identity_gflops = np.arange(min(expectations), max(expectations))
+    sns.regplot(x=predictions, y=expectations, scatter=False, fit_reg=True, color="Blue")
+    sns.scatterplot(x=predictions, y=expectations, hue=implementations)
+    plot = sns.lineplot(x=identity_gflops, y=identity_gflops)
+    plt.xlabel("Predictions")
+    plt.ylabel("Expectations")
+    plt.title("gflops_scattering")
+    plot.get_figure().savefig("{}/gflops_scattering_{}.png".format(path, name))
 
 def plot_prediction_dispersion_mlp(model:torch.nn.Module, 
                                validation_dataset:db.SparseMatrixDataset,

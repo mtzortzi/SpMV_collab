@@ -73,15 +73,19 @@ if __name__ == "__main__":
         csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
         validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
         
-        X = validation_dataset[:][0].numpy()
-        Y = validation_dataset[:][1].numpy()
-        print(X.shape)
-        input = X
-        y_pred = model(input)
-        print("prediction :", y_pred[0])
-        print("expectation :", validation_dataset[0][1][0].numpy())
-        prediction = torch.tensor(y_pred[0])
-        expectation = validation_dataset[0][1][0]
-        print("Error :{}%".format(utils_func.MAPELoss(prediction, expectation).numpy()*100))
+        length_data = len(validation_dataset)
+        for idx in range(length_data):
+            (X, Y) = validation_dataset[idx]
+            input = np.array([X.numpy()])
+            y_pred = model(input)
+            print("Predictions :", y_pred[0])
+            print("Expectation :", Y[0].numpy())
+            prediction = torch.tensor(y_pred[0])
+            expectation = Y[0]
+            print("Error : {}%".format(utils_func.MAPELoss(prediction, expectation).numpy()*100))
+        
+        name = "svr_load"
+        path = g.MODEL_PATH + "{}".format(system_used)
+        runners.plot_prediction_dispersion_svr(model,validation_dataset, name, path)
 
         
