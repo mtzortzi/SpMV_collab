@@ -118,7 +118,8 @@ def run_svr(kernel, C, epsilon, gamma, csv_path):
     dataset = dataReader.SparseMatrixDataset(csv_path)
 
     svr_model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma)
-    SVR_model.train_SVR(svr_model, dataset)
+    # SVR_model.train_SVR_Nystroem(svr_model, dataset)
+    SVR_model.train_LinearSVR(svr_model, dataset)
     return svr_model 
 
 def load_mlp_model(activation_fn, 
@@ -162,9 +163,6 @@ def plot_prediction_dispersion_svr(model:torch.nn.Module,
         predictions.append(y_pred_unscaled.numpy().tolist()[0][0])
         expectations.append(expectation.numpy().tolist()[0][0])
     
-    print(predictions)
-    print(expectations)
-
     implementations = validation_dataset.dataframe["implementation"]
     identity_gflops = np.arange(min(expectations), max(expectations))
     sns.regplot(x=predictions, y=expectations, scatter=False, fit_reg=True, color="Blue")

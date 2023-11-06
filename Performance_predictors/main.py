@@ -74,15 +74,15 @@ if __name__ == "__main__":
         validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
         
         length_data = len(validation_dataset)
-        for idx in range(length_data):
-            (X, Y) = validation_dataset[idx]
-            input = np.array([X.numpy()])
-            y_pred = model(input)
-            print("Predictions :", y_pred[0])
-            print("Expectation :", Y[0].numpy())
-            prediction = torch.tensor(y_pred[0])
-            expectation = Y[0]
-            print("Error : {}%".format(utils_func.MAPELoss(prediction, expectation).numpy()*100))
+        # for idx in range(length_data):
+        #     (X, Y) = validation_dataset[idx]
+        #     input = np.array([X.numpy()])
+        #     y_pred = model(input)
+        #     print("Predictions :", y_pred[0])
+        #     print("Expectation :", Y[0].numpy())
+        #     prediction = torch.tensor(y_pred[0])
+        #     expectation = Y[0]
+        #     print("Error : {}%".format(utils_func.MAPELoss(prediction, expectation).numpy()*100))
         
         name = "svr_load"
         path = g.MODEL_PATH + "{}".format(system_used)
