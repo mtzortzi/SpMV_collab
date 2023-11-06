@@ -114,12 +114,16 @@ def predict_mlp(model, input, scaler_gflops:preprocessing.MinMaxScaler, scaler_e
     # print("Loss : {}".format(loss(prediction, expected)))
     # print("Loss % : {}".format(utils_func.MAPELoss(prediction, expected)))
     return prediction
-def run_svr(kernel, C, epsilon, gamma, csv_path):
+def run_svr(kernel, C, epsilon, gamma, csv_path, system):
     dataset = dataReader.SparseMatrixDataset(csv_path)
 
-    svr_model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma)
+    svr_model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma,)
     # SVR_model.train_SVR_Nystroem(svr_model, dataset)
-    SVR_model.train_LinearSVR(svr_model, dataset)
+    # SVR_model.train_LinearSVR(svr_model, dataset)
+    SVR_model.train_usualSVR(svr_model, dataset)
+    #Saving the last model
+    saved_model_path = MODEL_PATH + "{}/svr".format(system)
+    torch.save(svr_model.state_dict(), saved_model_path)
     return svr_model 
 
 def load_mlp_model(activation_fn, 

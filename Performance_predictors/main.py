@@ -69,7 +69,8 @@ if __name__ == "__main__":
                         SVR_globals.C,
                         SVR_globals.epsilon,
                         SVR_globals.gamma,
-                        csv_path)
+                        csv_path,
+                        system_used)
         csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
         validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
         

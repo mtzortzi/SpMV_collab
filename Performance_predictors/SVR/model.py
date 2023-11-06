@@ -27,7 +27,7 @@ class SvrPredictor(torch.nn.Module):
         self.usualSVR = SVR(kernel=kernel, gamma=gamma, C=C, epsilon=epsilon, verbose=True)
     
     def forward(self, x):
-        return self.linearSVR.predict(x)
+        return self.usualSVR.predict(x)
 
 def train_SVR_Nystroem(model:SvrPredictor, dataset):
     X = dataset[:][0].numpy()
