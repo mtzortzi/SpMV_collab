@@ -5,8 +5,9 @@ import dataReader
 import globals as g
 import argparse
 import numpy as np
-import utils_func
 import torch
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
