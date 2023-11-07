@@ -117,12 +117,12 @@ def predict_mlp(model, input, scaler_gflops:preprocessing.MinMaxScaler, scaler_e
 def run_svr(kernel, C, epsilon, gamma, csv_path, system):
     dataset = dataReader.SparseMatrixDataset(csv_path)
 
-    svr_model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma,)
+    svr_model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma)
     # SVR_model.train_SVR_Nystroem(svr_model, dataset)
     # SVR_model.train_LinearSVR(svr_model, dataset)
     SVR_model.train_usualSVR(svr_model, dataset)
     #Saving the last model
-    saved_model_path = MODEL_PATH + "{}/svr".format(system)
+    saved_model_path = MODEL_PATH + "{}/svr/svr".format(system)
     torch.save(svr_model.state_dict(), saved_model_path)
     return svr_model 
 
@@ -139,13 +139,13 @@ def load_mlp_model(activation_fn,
                                    in_dimension,
                                    out_dimension,
                                    hidden_size)
-    model_path = MODEL_PATH + "/{}/{}".format(system, name)
+    model_path = MODEL_PATH + "/{}/mlp/{}".format(system, name)
     model.load_state_dict(torch.load(model_path))
     return model
 
 def load_svr_model(kernel, C, epsilon, gamma, name, system):
     print("loading svr model")
-    model_path = MODEL_PATH + "/{}/{}".format(system, name)
+    model_path = MODEL_PATH + "/{}/svr/{}".format(system, name)
     model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma)
     model.load_state_dict(torch.load(model_path))
     return model
@@ -175,7 +175,7 @@ def plot_prediction_dispersion_svr(model:torch.nn.Module,
     plt.xlabel("Predictions")
     plt.ylabel("Expectations")
     plt.title("gflops_scattering")
-    plot.get_figure().savefig("{}/gflops_scattering_{}.png".format(path, name))
+    plot.get_figure().savefig("{}/svr/gflops_scattering_{}.png".format(path, name))
 
 def plot_prediction_dispersion_mlp(model:torch.nn.Module, 
                                validation_dataset:db.SparseMatrixDataset,
