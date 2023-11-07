@@ -52,12 +52,13 @@ def train_LinearSVR(model:SvrPredictor, dataset):
     model.linearSVR.fit(X, out)
     print("score of model :", model.linearSVR.score(X, out))
 
-def train_usualSVR(model:SvrPredictor, dataset):
+def train_usualSVR(model:SvrPredictor, dataset, out_feature):
+    assert out_feature == 0 or out_feature == 1
     X = dataset[:][0].numpy()
     Y = dataset[:][1].numpy()
     out = np.array([])
     for a in Y:
-        out = np.append(out, a[0])
+        out = np.append(out, a[out_feature])
     
     model.usualSVR.fit(X, out)
     print("score of model :", model.usualSVR.score(X, out))

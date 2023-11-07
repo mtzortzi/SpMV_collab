@@ -74,9 +74,21 @@ if __name__ == "__main__":
                         SVR_globals.epsilon,
                         SVR_globals.gamma,
                         csv_path,
-                        system_used)
+                        system_used,
+                        0)
         name_gflops = "svr_gflops"
-        runners.plot_prediction_dispersion_svr(model_gflops, validation_dataset, name_gflops, path)
+        runners.plot_prediction_dispersion_svr(model_gflops, validation_dataset, name_gflops, path, 0)
+
+        print("Running svr on energy efficiency predictions")
+        model_energy_efficiency = runners.run_svr(SVR_globals.kernel,
+                        SVR_globals.C,
+                        SVR_globals.epsilon,
+                        SVR_globals.gamma,
+                        csv_path,
+                        system_used,
+                        1)
+        name_energy_efficiency = "svr_energy_efficiency"
+        runners.plot_prediction_dispersion_svr(model_energy_efficiency, validation_dataset, name_energy_efficiency, path, 1)
         
         
 
