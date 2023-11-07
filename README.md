@@ -116,7 +116,7 @@ And an output dimension of 2 for these features :
 For further explanation of the data preprocessing see [Dataset_section](#dataset).
 
 ### SVR
-Support Vector Regression (SVR) is based on Support Vector Machines (SVM). Without going into details SVM modifies the dimension of our working space in order to make non-linear separable population of data separable. Then with the "Kernel trick" we project back our data in our original space. Here is a visual example :
+Support Vector Regression (SVR) is based on Support Vector Machines (SVM). Without going into details SVM modifies the dimension of our working space in order to make the non-linear population of data separable. Then with the "Kernel trick" we project back our data in our original space. Here is a visual example :
 ![image](./img/kernel_trick.png)
 
 In our project, we use SVR in order to find a model by using the kernel trick to make a prediction of the GFLOPs and the energy efficiency of our system given sparse matrix features
@@ -148,12 +148,12 @@ The saved_model folder is where we store all the results from our trained model.
 
 ### Models
 For each model that is implemented in this project, a specific folder is created where the following is stored :
-* ``model.py`` : this is the file where the model class as well as the train function and other functions relative to the model is written.
-* ``globals.py`` : this is the file where all the parameters fo the model are stored.
+* ``model.py``: this is the file where the model class as well as the train function and other functions relative to the model is written.
+* ``globals.py``: this is the file where all the parameters of the model are stored.
 
 
 ### Main program
-The main program consists of several bricks to work. First, it retrieves parameters from the command line in order to work. Then given those parameters parsed the corresponding runner is called from the [model_runners.py](https://github.com/mtzortzi/SpMV_collab/blob/main/Performance_predictors/model_runners.py) file. Also from this file before running the program data is preprocessed from the [dataReader.py](https://github.com/mtzortzi/SpMV_collab/blob/main/Performance_predictors/dataReader.py) file. In this file we extract the corresponding features from our dataset :
+The main program consists of several bricks to work. First, it retrieves parameters from the command line in order to work. Then given those parameters parsed the corresponding runner is called from the [model_runners.py](https://github.com/mtzortzi/SpMV_collab/blob/main/Performance_predictors/model_runners.py) file. Also from this file before running the program data is preprocessed from the [dataReader.py](https://github.com/mtzortzi/SpMV_collab/blob/main/Performance_predictors/dataReader.py) file. In this file, we extract the corresponding features from our dataset :
 * A_mem_footprint
 * avg_nz_row
 * skew_coeff
@@ -164,7 +164,7 @@ The main program consists of several bricks to work. First, it retrieves paramet
 
 All of these features need to be scaled from 0 to 1 (except the avg_bandwidth_scaled which is already scaled and the system is a string). We scale our data in order to increase stability in the learning process. For the system feature, given the fact that it's a string we used a one-hot encoding system, where we retrived each unique class and associated it with a unique number in [0, nb_class - 1].
 
-Finally, in the ``globals.py`` file you will find the global path for the dataset and the saved models, the different hardware systems that are implemented in the dataset, and the implemented models.
+Finally, in the [globals.py](https://github.com/mtzortzi/SpMV_collab/blob/main/Performance_predictors/globals.py) file you will find the global path for the dataset and the saved models, the different hardware systems that are implemented in the dataset, and the implemented models.
 
 
 ## How to make it work on your computer
@@ -186,5 +186,5 @@ optional arguments:
   -s SYSTEM, --system SYSTEM
                         CPU/GPU name
   -l, --load            Load the model described from it's hyperparameters in it's 
-  corresponfing global.py file and the -m parameter described above
+  corresponding global.py file and the -m parameter described above
 ````
