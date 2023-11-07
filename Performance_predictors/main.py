@@ -1,11 +1,13 @@
 import model_runners as runners
 import MLP.globals as MLP_globals
 import SVR.globals as SVR_globals
+import Tree.globals as Tree_globals
 import dataReader
 import globals as g
 import argparse
 import numpy as np
 import torch
+from Tree.model import *
 
 
 
@@ -92,7 +94,24 @@ if __name__ == "__main__":
         runners.plot_prediction_dispersion_svr(model_energy_efficiency, validation_dataset, name_energy_efficiency, path, 1)
     
     elif model_used == "tree":
-        print("using decision trees")
+        print("running decision trees")
+        csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
+        csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
+        validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
+        path = g.MODEL_PATH + "{}".format(system_used)
+        
+
+        print("Running tree on gflops predictions")
+        tree_gflops = runners.run_tree(Tree_globals.max_depth, csv_path, system_used, 0)
+        name_gflops = "tree_gflops"
+        runners.plot_prediction_dispersion_tree(tree_gflops, validation_dataset, name_gflops, path, 0)
+
+
+        print("Running tree on energy efficiency predictions")
+        tree_energy_efficiency = runners.run_tree(Tree_globals.max_depth, csv_path, system_used, 1)
+        name_energy_efficiency = "tree_energy_efficiency"
+        runners.plot_prediction_dispersion_tree(tree_energy_efficiency, validation_dataset, name_energy_efficiency, path, 1)
+
         
 
         
