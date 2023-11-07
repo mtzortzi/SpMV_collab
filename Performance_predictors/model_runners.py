@@ -211,16 +211,11 @@ def plot_prediction_dispersion_tree(model:TreePredictor,
     
     plt.title(plot_title)
     plot = sns.lineplot(x=indentity, y=indentity)
-    plot.get_figure().savefig("{}/tree/{}_{}.png".format(path, plot_title, name))
+    plot.get_figure().savefig("{}/tree/scaterring_{}.png".format(path, plot_title, name))
 
     plt.clf()
-    plot_tree(model.tree)
-    tree_name = ""
-    if out_feature == 0:
-        tree_name = "gflops"
-    elif out_feature == 1:
-        tree_name = "energy_efficiency"
-    plt.savefig("{}/tree/{}_{}.png".format(path, tree_name, name))
+    plot_tree(model.tree, filled=True, feature_names=implementations)
+    plt.savefig("{}/tree/{}.pdf".format(path, name))
 
 
 
@@ -244,8 +239,8 @@ def plot_prediction_dispersion_svr(model:torch.nn.Module,
             y_pred_unscaled = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(y_pred.reshape(-1, 1)))
             expectation = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(Y[out_feature].view(-1, 1)))
         
-        predictions.append(y_pred_unscaled.numpy().tolist()[0][0])
-        expectations.append(expectation.numpy().tolist()[0][0])
+        predictions.append(y_pred_unscaled.numpy().flatten().tolist())
+        expectations.append(expectation.numpy().flatten().tolist())
     plt.clf()
     implementations = validation_dataset.dataframe["implementation"]
     indentity = np.arange(min(expectations), max(expectations))
