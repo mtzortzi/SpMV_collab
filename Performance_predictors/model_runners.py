@@ -214,7 +214,8 @@ def plot_prediction_dispersion_tree(model:TreePredictor,
     plot.get_figure().savefig("{}/tree/scaterring_{}.png".format(path, plot_title, name))
 
     plt.clf()
-    plot_tree(model.tree, filled=True, feature_names=implementations)
+    features = validation_dataset.features
+    plot_tree(model.tree, filled=True, feature_names=features)
     plt.savefig("{}/tree/{}.pdf".format(path, name))
 
 
