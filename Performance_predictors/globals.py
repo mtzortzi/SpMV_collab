@@ -13,4 +13,5 @@ hardware = ["Tesla-P100",
 MODEL_PATH = "./saved_models/"
 
 models = ["mlp",
-          "svr"]
+          "svr",
+          "tree"]

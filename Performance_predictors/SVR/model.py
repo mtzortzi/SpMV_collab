@@ -61,4 +61,3 @@ def train_usualSVR(model:SvrPredictor, dataset, out_feature):
         out = np.append(out, a[out_feature])
     
     model.usualSVR.fit(X, out)
-    print("score of model :", model.usualSVR.score(X, out))
