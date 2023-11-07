@@ -64,28 +64,32 @@ if __name__ == "__main__":
     elif model_used == "svr":
         print("running Support Vector Regression model")
         csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
+        csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
+        validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
+        path = g.MODEL_PATH + "{}".format(system_used)
         
-        model = runners.run_svr(SVR_globals.kernel,
+        print("Running svr on gflops predictions")
+        model_gflops = runners.run_svr(SVR_globals.kernel,
                         SVR_globals.C,
                         SVR_globals.epsilon,
                         SVR_globals.gamma,
-                        csv_path)
-        csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
-        validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
+                        csv_path,
+                        system_used,
+                        0)
+        name_gflops = "svr_gflops"
+        runners.plot_prediction_dispersion_svr(model_gflops, validation_dataset, name_gflops, path, 0)
+
+        print("Running svr on energy efficiency predictions")
+        model_energy_efficiency = runners.run_svr(SVR_globals.kernel,
+                        SVR_globals.C,
+                        SVR_globals.epsilon,
+                        SVR_globals.gamma,
+                        csv_path,
+                        system_used,
+                        1)
+        name_energy_efficiency = "svr_energy_efficiency"
+        runners.plot_prediction_dispersion_svr(model_energy_efficiency, validation_dataset, name_energy_efficiency, path, 1)
         
-        length_data = len(validation_dataset)
-        for idx in range(length_data):
-            (X, Y) = validation_dataset[idx]
-            input = np.array([X.numpy()])
-            y_pred = model(input)
-            print("Predictions :", y_pred[0])
-            print("Expectation :", Y[0].numpy())
-            prediction = torch.tensor(y_pred[0])
-            expectation = Y[0]
-            print("Error : {}%".format(utils_func.MAPELoss(prediction, expectation).numpy()*100))
         
-        name = "svr_load"
-        path = g.MODEL_PATH + "{}".format(system_used)
-        runners.plot_prediction_dispersion_svr(model,validation_dataset, name, path)
 
         

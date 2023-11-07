@@ -114,11 +114,20 @@ def predict_mlp(model, input, scaler_gflops:preprocessing.MinMaxScaler, scaler_e
     # print("Loss : {}".format(loss(prediction, expected)))
     # print("Loss % : {}".format(utils_func.MAPELoss(prediction, expected)))
     return prediction
-def run_svr(kernel, C, epsilon, gamma, csv_path):
+def run_svr(kernel, C, epsilon, gamma, csv_path, system, out_feature):
     dataset = dataReader.SparseMatrixDataset(csv_path)
 
     svr_model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma)
-    SVR_model.train_SVR(svr_model, dataset)
+    # SVR_model.train_SVR_Nystroem(svr_model, dataset)
+    # SVR_model.train_LinearSVR(svr_model, dataset)
+    SVR_model.train_usualSVR(svr_model, dataset, out_feature)
+    #Saving the last model
+    if out_feature == 0:  
+        saved_model_path = MODEL_PATH + "{}/svr/svr_gflops".format(system)
+    elif out_feature == 1:
+        saved_model_path = MODEL_PATH + "{}/svr/svr_energy_efficiency".format(system)
+    
+    torch.save(svr_model.state_dict(), saved_model_path)
     return svr_model 
 
 def load_mlp_model(activation_fn, 
@@ -134,13 +143,13 @@ def load_mlp_model(activation_fn,
                                    in_dimension,
                                    out_dimension,
                                    hidden_size)
-    model_path = MODEL_PATH + "/{}/{}".format(system, name)
+    model_path = MODEL_PATH + "/{}/mlp/{}".format(system, name)
     model.load_state_dict(torch.load(model_path))
     return model
 
 def load_svr_model(kernel, C, epsilon, gamma, name, system):
     print("loading svr model")
-    model_path = MODEL_PATH + "/{}/{}".format(system, name)
+    model_path = MODEL_PATH + "/{}/svr/{}".format(system, name)
     model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma)
     model.load_state_dict(torch.load(model_path))
     return model
@@ -148,7 +157,13 @@ def load_svr_model(kernel, C, epsilon, gamma, name, system):
 def plot_prediction_dispersion_svr(model:torch.nn.Module,
                                    validation_dataset:db.SparseMatrixDataset,
                                    name:str,
-                                   path:str):
+                                   path:str,
+                                   out_feature):
+    
+    if out_feature == 0:
+        print("gflops")
+    else:
+        print("energy efficiency")
     
     length_dataset = len(validation_dataset)
     predictions = []
@@ -157,23 +172,33 @@ def plot_prediction_dispersion_svr(model:torch.nn.Module,
         (X, Y) = validation_dataset[idx]
         input = np.array([X.numpy()])
         y_pred = model(input)
-        y_pred_unscaled = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(y_pred.reshape(-1, 1)))
-        expectation = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(Y[0].view(-1, 1)))
+        if out_feature == 0:
+            y_pred_unscaled = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(y_pred.reshape(-1, 1)))
+            expectation = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(Y[out_feature].view(-1, 1)))
+        elif out_feature == 1:
+            y_pred_unscaled = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(y_pred.reshape(-1, 1)))
+            expectation = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(Y[out_feature].view(-1, 1)))
+        
         predictions.append(y_pred_unscaled.numpy().tolist()[0][0])
         expectations.append(expectation.numpy().tolist()[0][0])
-    
-    print(predictions)
-    print(expectations)
-
+    print(min(expectations), max(expectations))
+    plt.clf()
     implementations = validation_dataset.dataframe["implementation"]
-    identity_gflops = np.arange(min(expectations), max(expectations))
+    indentity = np.arange(min(expectations), max(expectations))
     sns.regplot(x=predictions, y=expectations, scatter=False, fit_reg=True, color="Blue")
     sns.scatterplot(x=predictions, y=expectations, hue=implementations)
-    plot = sns.lineplot(x=identity_gflops, y=identity_gflops)
     plt.xlabel("Predictions")
     plt.ylabel("Expectations")
-    plt.title("gflops_scattering")
-    plot.get_figure().savefig("{}/gflops_scattering_{}.png".format(path, name))
+
+    plot_title = ""
+    if out_feature == 0:
+        plot_title = "gflops_scattering"
+    elif out_feature == 1:
+        plot_title = "energy_effiency_scattering"
+    
+    plt.title(plot_title)
+    plot = sns.lineplot(x=indentity, y=indentity)
+    plot.get_figure().savefig("{}/svr/{}_{}.png".format(path, plot_title, name))
 
 def plot_prediction_dispersion_mlp(model:torch.nn.Module, 
                                validation_dataset:db.SparseMatrixDataset,

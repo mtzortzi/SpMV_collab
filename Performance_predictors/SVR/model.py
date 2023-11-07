@@ -4,6 +4,8 @@ import numpy as np
 from tqdm import tqdm
 from sklearn.linear_model import SGDRegressor
 from sklearn.kernel_approximation import Nystroem, RBFSampler
+from sklearn.svm import LinearSVR
+from sklearn.svm import SVR
 
 class SvrPredictor(torch.nn.Module):
     def __init__(self, kernel, 
@@ -21,11 +23,13 @@ class SvrPredictor(torch.nn.Module):
                                              random_state=1,
                                              n_components=7)
         self.feature_map_RBF = RBFSampler(gamma=gamma, n_components=7)
+        self.linearSVR = LinearSVR(epsilon=epsilon, C=C, verbose=1, max_iter=99999999, intercept_scaling=1.0, loss="epsilon_insensitive", random_state=None, tol=0.0001)
+        self.usualSVR = SVR(kernel=kernel, gamma=gamma, C=C, epsilon=epsilon, verbose=True)
     
     def forward(self, x):
-        return self.clf.predict(x)
+        return self.usualSVR.predict(x)
 
-def train_SVR(model:SvrPredictor, dataset):
+def train_SVR_Nystroem(model:SvrPredictor, dataset):
     X = dataset[:][0].numpy()
     Y = dataset[:][1].numpy()
     out = np.array([])
@@ -38,3 +42,23 @@ def train_SVR(model:SvrPredictor, dataset):
     model.clf.fit(data_transformed, out)
     print("score of model :", model.clf.score(data_transformed, out))
     return model
+
+def train_LinearSVR(model:SvrPredictor, dataset):
+    X = dataset[:][0].numpy()
+    Y = dataset[:][1].numpy()
+    out = np.array([])
+    for a in Y:
+        out = np.append(out, a[0])
+    model.linearSVR.fit(X, out)
+    print("score of model :", model.linearSVR.score(X, out))
+
+def train_usualSVR(model:SvrPredictor, dataset, out_feature):
+    assert out_feature == 0 or out_feature == 1
+    X = dataset[:][0].numpy()
+    Y = dataset[:][1].numpy()
+    out = np.array([])
+    for a in Y:
+        out = np.append(out, a[out_feature])
+    
+    model.usualSVR.fit(X, out)
+    print("score of model :", model.usualSVR.score(X, out))
