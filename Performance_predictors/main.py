@@ -89,7 +89,9 @@ if __name__ == "__main__":
                         1)
         name_energy_efficiency = "svr_energy_efficiency"
         runners.plot_prediction_dispersion_svr(model_energy_efficiency, validation_dataset, name_energy_efficiency, path, 1)
-        
+    
+    elif model_used == "tree":
+        print("using decision trees")
         
 
         
