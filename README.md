@@ -120,6 +120,25 @@ Support Vector Regression (SVR) is based on Support Vector Machines (SVM). Witho
 ![image](./img/kernel_trick.png)
 
 In our project we use SVR in order to find a model by using the kernel trick to make prediction of the GFLOPs and the energy efficiency or our system given sparse matrix features
+
+### Decision trees
+As explained in the documentation of the scikit-learn library those non-parametric supervised learning models represent some advantages and drawbacks primarly listed below :\
+\
+Advantages :
+* Simple to understand and to interpret. Trees can be visualized.
+* Requires little data preparation. Other techniques often require data normalization, dummy variables need to be created and blank values to be removed. Some tree and algorithm combinations support missing values.
+* The cost of using the tree (i.e., predicting data) is logarithmic in the number of data points used to train the tree.
+* Uses a white box model. If a given situation is observable in a model, the explanation for the condition is easily explained by boolean logic. By contrast, in a black box model (e.g., in an artificial neural network), results may be more difficult to interpret.
+* Possible to validate a model using statistical tests. That makes it possible to account for the reliability of the model.
+
+\
+Drawbacks :
+* Decision-tree learners can create over-complex trees that do not generalize the data well. This is called overfitting. Mechanisms such as pruning, setting the minimum number of samples required at a leaf node or setting the maximum depth of the tree are necessary to avoid this problem.
+* Decision trees can be unstable because small variations in the data might result in a completely different tree being generated. This problem is mitigated by using decision trees within an ensemble.
+* Predictions of decision trees are neither smooth nor continuous, but piecewise constant approximations. Therefore, they are not good at extrapolation.
+* Decision tree learners create biased trees if some classes dominate. It is therefore recommended to balance the dataset prior to fitting with the decision tree.
+
+
 ## Folders and file architectures
 ### Dataset
 In the Dataset folder you will find all the data that is needed for us to train our models. In addition to that you can find some python scripts that aims to reshape data and split dataset. The dataset is splited in a way that each row that corresponds to a given system will in their own csv file. Also some data samples have been added in order to have a better view of the real data.
