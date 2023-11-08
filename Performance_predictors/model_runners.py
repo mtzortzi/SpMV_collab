@@ -7,6 +7,7 @@ import dataReader
 import torch
 from torch.utils.data.sampler import SubsetRandomSampler
 from torch.utils.data import DataLoader
+from torchmetrics.regression import MeanAbsolutePercentageError
 import matplotlib.pyplot as plt
 import numpy as np
 from globals import MODEL_PATH, DATA_PATH, models
@@ -209,7 +210,7 @@ def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
     sns.regplot(x=predictions, y=expectations, scatter=False, fit_reg=True, color="Blue")
     sns.scatterplot(x=predictions, y=expectations, hue=implementations)
     
-    plot = sns.lineplot(x=identity, y=identity)
+    plot = sns.lineplot(x=identity, y=identity, color="Red")
     plt.xlabel("Predictions")
     plt.ylabel("Expectations")
 
@@ -276,14 +277,18 @@ def plot_prediction_dispersion_mlp(model:torch.nn.Module,
     plot.get_figure().savefig("{}/energy_efficiency_scattering_{}.png".format(path, name))
     plt.clf()
 
-def average_loss_mlp(model:torch.nn.Module, validation_dataset:db.SparseMatrixDataset):
+def average_loss_mlp(model:torch.nn.Module, validation_dataset:db.SparseMatrixDataset, out_feature:int):
     print("Average loss mlp")
     length_dataset = len(validation_dataset)
     avg_loss_lst : list = []
+    loss_fnc = MeanAbsolutePercentageError()
     for idx in range(length_dataset):
         (X, Y) = validation_dataset[idx]
-        y_pred = model(X)
-        loss = MAPELoss(y_pred.detach(), Y)
+        prediction = predict_mlp(model, X, validation_dataset.scaler_gflops, validation_dataset.scaler_energy_efficiency)
+        gflops_unscaled = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(Y[0].view(1, -1)))
+        energy_efficiency_unscaled = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(Y[1].view(1, -1)))
+        expectation = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1)
+        loss = loss_fnc(prediction, expectation)
         avg_loss_lst.append(loss)
     return sum(avg_loss_lst)/len(avg_loss_lst)
 
@@ -291,10 +296,17 @@ def average_loss_sklearn(model:torch.nn.Module, validation_dataset:db.SparseMatr
     print("Average loss sklearn")
     length_dataset = len(validation_dataset)
     avg_loss_lst : list = []
+    loss_fnc = MeanAbsolutePercentageError()
     for idx in range(length_dataset):
         (X, Y) = validation_dataset[idx]
         input = np.array([X.numpy()])
-        y_pred = torch.tensor(model(input))
-        loss = MAPELoss(Y[out_feature], y_pred)
+        y_pred = model(input)
+        if out_feature == 0:
+            y_pred_unscaled = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(y_pred.reshape(-1, 1)))
+            expectation = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(Y[out_feature].view(-1, 1)))
+        elif out_feature == 1:
+            y_pred_unscaled = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(y_pred.reshape(-1, 1)))
+            expectation = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(Y[out_feature].view(-1, 1)))
+        loss = loss_fnc(y_pred_unscaled, expectation)
         avg_loss_lst.append(loss)
     return sum(avg_loss_lst)/len(avg_loss_lst)
