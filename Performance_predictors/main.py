@@ -52,7 +52,7 @@ if __name__ == "__main__":
             path = g.MODEL_PATH + "{}/mlp".format(system_used)
             runners.plot_prediction_dispersion_mlp(model, validation_dataset, name, path)
             avg_loss = runners.average_loss_mlp(model, validation_dataset)
-            print("Avg loss of model mlp :", avg_loss)
+            print("Avg loss of model mlp : {}%".format(avg_loss.detach().tolist()*100))
         
         elif model_used == "tree":
             csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
         # Computing average loss on validation dataset
         avg_loss = runners.average_loss_mlp(mlp_model, validation_dataset)
-        print("Avg loss of model mlp :", avg_loss)
+        print("Avg loss of model mlp :{}¨%".format(avg_loss.tolist()*100))
         
     elif model_used == "svr":
         print("running Support Vector Regression model")
@@ -120,7 +120,7 @@ if __name__ == "__main__":
 
         # Computing average loss on validation dataset
         avg_loss : torch.Tensor = runners.average_loss_sklearn(model_gflops, validation_dataset, 0)
-        print("Avg loss of svr model on gflops :", avg_loss.tolist())
+        print("Avg loss of svr model on gflops : {}%".format(avg_loss.tolist()))
 
         print("Running svr on energy efficiency predictions")
         # Running model
@@ -138,7 +138,7 @@ if __name__ == "__main__":
 
         # Computing average loss on validation dataset
         avg_loss : torch.Tensor = runners.average_loss_sklearn(model_energy_efficiency, validation_dataset, 1)
-        print("Avg loss of svr model on energy_efficiency:", avg_loss.tolist())
+        print("Avg loss of svr model on energy_efficiency : {}%".format(avg_loss.tolist()))
 
     elif model_used == "tree":
         print("running decision trees")
@@ -157,7 +157,7 @@ if __name__ == "__main__":
 
         # Computing average loss on validation dataset
         avg_loss : torch.Tensor = runners.average_loss_sklearn(tree_gflops, validation_dataset, 0)
-        print("Avg loss of tree model on gflops :", avg_loss.tolist())
+        print("Avg loss of tree model on gflops : {}%".format(avg_loss.tolist()))
 
 
         # Running model
@@ -170,4 +170,4 @@ if __name__ == "__main__":
 
         # Computing average loss on validation dataset
         avg_loss : torch.Tensor = runners.average_loss_sklearn(tree_energy_efficiency, validation_dataset, 1)
-        print("Avg loss of tree model on energy efficiency:", avg_loss.tolist())
+        print("Avg loss of tree model on energy efficiency : {}%".format(avg_loss.tolist()))

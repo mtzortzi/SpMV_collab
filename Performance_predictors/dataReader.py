@@ -42,12 +42,12 @@ class SparseMatrixDataset(Dataset):
         
         # Scaling gflops output
         gflops = self.dataframe[["gflops"]].values
-        self.scaler_gflops = preprocessing.MinMaxScaler().fit(gflops)
+        self.scaler_gflops = preprocessing.StandardScaler().fit(gflops)
         gflops_scaled = torch.tensor(self.scaler_gflops.transform(gflops), dtype=torch.float32)
 
         # Scaling energy_efficiency output
         energy_efficiency = torch.tensor(self.dataframe[["energy_efficiency"]].values, dtype=torch.float32)
-        self.scaler_energy_efficiency = preprocessing.MinMaxScaler().fit(energy_efficiency)
+        self.scaler_energy_efficiency = preprocessing.StandardScaler().fit(energy_efficiency)
         energy_efficiency_scaled = torch.tensor(self.scaler_energy_efficiency.transform(energy_efficiency), dtype=torch.float32)
 
         # Adding the scaled glops and energy_efficiency to output
@@ -56,7 +56,7 @@ class SparseMatrixDataset(Dataset):
     
 
     def scale_row(self, row):
-        scaler = preprocessing.MinMaxScaler()
+        scaler = preprocessing.StandardScaler()
         row_scaled = scaler.fit_transform(row.reshape(-1, 1))
         return row_scaled, scaler
     

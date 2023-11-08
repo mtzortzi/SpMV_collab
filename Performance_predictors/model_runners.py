@@ -283,7 +283,8 @@ def average_loss_mlp(model:torch.nn.Module, validation_dataset:db.SparseMatrixDa
     for idx in range(length_dataset):
         (X, Y) = validation_dataset[idx]
         y_pred = model(X)
-        avg_loss_lst.append(MAPELoss(y_pred.detach(), Y).tolist())
+        loss = MAPELoss(y_pred.detach(), Y)
+        avg_loss_lst.append(loss)
     return sum(avg_loss_lst)/len(avg_loss_lst)
 
 def average_loss_sklearn(model:torch.nn.Module, validation_dataset:db.SparseMatrixDataset, out_feature:int):
@@ -294,5 +295,6 @@ def average_loss_sklearn(model:torch.nn.Module, validation_dataset:db.SparseMatr
         (X, Y) = validation_dataset[idx]
         input = np.array([X.numpy()])
         y_pred = torch.tensor(model(input))
-        avg_loss_lst.append(MAPELoss(Y[out_feature], y_pred))
+        loss = MAPELoss(Y[out_feature], y_pred)
+        avg_loss_lst.append(loss)
     return sum(avg_loss_lst)/len(avg_loss_lst)
