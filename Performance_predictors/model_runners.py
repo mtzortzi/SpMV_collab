@@ -15,6 +15,7 @@ from sklearn import preprocessing
 import seaborn as sns
 from sklearn.tree import plot_tree
 from Tree.model import TreePredictor
+from utils_func import MAPELoss
 
 def run_mlp(activation_function,
             nb_hidden_layers,
@@ -73,11 +74,7 @@ def run_mlp(activation_function,
     #Saving the last model
     saved_model_path = MODEL_PATH + "{}/mlp_{}epochs".format(system, n_iteration)
     torch.save(mlp_model.state_dict(), saved_model_path)
-
-    #Ploting prediction scaterring
-    name = "mlp_{}epochs".format(MLP_globals.nb_epochs)
-    path = MODEL_PATH + "{}".format(system)
-    plot_prediction_dispersion_mlp(mlp_model, validation_dataset, name, path)
+   
 
     #Ploting loss history
     idx_test_counter = (len(tbl_train_counter)-1)//n_iteration
@@ -90,6 +87,8 @@ def run_mlp(activation_function,
     plt.show()
     saved_figure_path = MODEL_PATH + "/{}/mlp_{}_{}epochs.png".format(system, system, n_iteration)
     plt.savefig(saved_figure_path)
+
+    return mlp_model
 
 def predict_mlp(model, input, scaler_gflops:preprocessing.MinMaxScaler, scaler_energy_efficiency:preprocessing.MinMaxScaler):
     Y_pred = model(input.float())
@@ -116,6 +115,7 @@ def predict_mlp(model, input, scaler_gflops:preprocessing.MinMaxScaler, scaler_e
     # print("Loss : {}".format(loss(prediction, expected)))
     # print("Loss % : {}".format(utils_func.MAPELoss(prediction, expected)))
     return prediction
+
 def run_svr(kernel, C, epsilon, gamma, csv_path, system, out_feature):
     dataset = dataReader.SparseMatrixDataset(csv_path)
 
@@ -170,7 +170,7 @@ def load_svr_model(kernel, C, epsilon, gamma, name, system):
 def load_tree_model(max_depth, name, system):
     print("loading tree model")
     model_path = MODEL_PATH + "/{}/tree/{}".format(system, name)
-    model = Tree_model.DecisionTreeRegressor(max_depth)
+    model = Tree_model.TreePredictor(max_depth)
     model.load_state_dict(torch.load(model_path))
     return model
 
@@ -230,9 +230,10 @@ def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
         plt.savefig("{}/tree/{}.pdf".format(path, name))
 
 def plot_prediction_dispersion_mlp(model:torch.nn.Module, 
-                               validation_dataset:db.SparseMatrixDataset,
-                               name:str, 
-                               path:str):
+                                   validation_dataset:db.SparseMatrixDataset,
+                                   name:str, 
+                                   path:str):
+    
     length_dataset = len(validation_dataset)
     predictions = []
     expectations = []
@@ -274,3 +275,24 @@ def plot_prediction_dispersion_mlp(model:torch.nn.Module,
     plt.title("energy_efficieny_scattering")
     plot.get_figure().savefig("{}/energy_efficiency_scattering_{}.png".format(path, name))
     plt.clf()
+
+def average_loss_mlp(model:torch.nn.Module, validation_dataset:db.SparseMatrixDataset):
+    print("Average loss mlp")
+    length_dataset = len(validation_dataset)
+    avg_loss_lst : list = []
+    for idx in range(length_dataset):
+        (X, Y) = validation_dataset[idx]
+        y_pred = model(X)
+        avg_loss_lst.append(MAPELoss(y_pred.detach(), Y).tolist())
+    return sum(avg_loss_lst)/len(avg_loss_lst)
+
+def average_loss_sklearn(model:torch.nn.Module, validation_dataset:db.SparseMatrixDataset, out_feature:int):
+    print("Average loss sklearn")
+    length_dataset = len(validation_dataset)
+    avg_loss_lst : list = []
+    for idx in range(length_dataset):
+        (X, Y) = validation_dataset[idx]
+        input = np.array([X.numpy()])
+        y_pred = torch.tensor(model(input))
+        avg_loss_lst.append(MAPELoss(Y[out_feature], y_pred))
+    return sum(avg_loss_lst)/len(avg_loss_lst)
