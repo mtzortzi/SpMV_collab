@@ -9,7 +9,7 @@ from torch.utils.data.sampler import SubsetRandomSampler
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import numpy as np
-from globals import MODEL_PATH, DATA_PATH
+from globals import MODEL_PATH, DATA_PATH, models
 import dataReader as db
 from sklearn import preprocessing
 import seaborn as sns
@@ -174,11 +174,14 @@ def load_tree_model(max_depth, name, system):
     model.load_state_dict(torch.load(model_path))
     return model
 
-def plot_prediction_dispersion_tree(model:TreePredictor,
-                                    validation_dataset:db.SparseMatrixDataset,
-                                    name:str,
-                                    path:str,
-                                    out_feature):
+def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
+                                   validation_dataset:db.SparseMatrixDataset,
+                                   name:str,
+                                   path:str,
+                                   out_feature:int,
+                                   model_name:str):
+    
+    assert model_name in models
     length_dataset = len(validation_dataset)
     predictions = []
     expectations = []
@@ -195,11 +198,18 @@ def plot_prediction_dispersion_tree(model:TreePredictor,
         
         predictions.append(y_pred_unscaled.numpy().tolist()[0][0])
         expectations.append(expectation.numpy().tolist()[0][0])
+    
     plt.clf()
     implementations = validation_dataset.dataframe["implementation"]
-    indentity = np.arange(min(expectations), max(expectations))
+    if out_feature == 0:
+        identity = np.arange(min(expectations), max(expectations))
+    elif out_feature == 1:
+        identity = np.arange(min(expectations), max(expectations), 0.1)
+    
     sns.regplot(x=predictions, y=expectations, scatter=False, fit_reg=True, color="Blue")
     sns.scatterplot(x=predictions, y=expectations, hue=implementations)
+    
+    plot = sns.lineplot(x=identity, y=identity)
     plt.xlabel("Predictions")
     plt.ylabel("Expectations")
 
@@ -210,62 +220,19 @@ def plot_prediction_dispersion_tree(model:TreePredictor,
         plot_title = "energy_effiency_scattering"
     
     plt.title(plot_title)
-    plot = sns.lineplot(x=indentity, y=indentity)
-    plot.get_figure().savefig("{}/tree/scaterring_{}.png".format(path, plot_title, name))
-
-    plt.clf()
-    features = validation_dataset.features
-    plot_tree(model.tree, filled=True, feature_names=features)
-    plt.savefig("{}/tree/{}.pdf".format(path, name))
-
-
-
-def plot_prediction_dispersion_svr(model:torch.nn.Module,
-                                   validation_dataset:db.SparseMatrixDataset,
-                                   name:str,
-                                   path:str,
-                                   out_feature):
-        
-    length_dataset = len(validation_dataset)
-    predictions = []
-    expectations = []
-    for idx in range(length_dataset):
-        (X, Y) = validation_dataset[idx]
-        input = np.array([X.numpy()])
-        y_pred = model(input)
-        if out_feature == 0:
-            y_pred_unscaled = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(y_pred.reshape(-1, 1)))
-            expectation = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(Y[out_feature].view(-1, 1)))
-        elif out_feature == 1:
-            y_pred_unscaled = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(y_pred.reshape(-1, 1)))
-            expectation = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(Y[out_feature].view(-1, 1)))
-        
-        predictions.append(y_pred_unscaled.numpy().flatten().tolist())
-        expectations.append(expectation.numpy().flatten().tolist())
-    plt.clf()
-    implementations = validation_dataset.dataframe["implementation"]
-    indentity = np.arange(min(expectations), max(expectations))
-    sns.regplot(x=predictions, y=expectations, scatter=False, fit_reg=True, color="Blue")
-    sns.scatterplot(x=predictions, y=expectations, hue=implementations)
-    plt.xlabel("Predictions")
-    plt.ylabel("Expectations")
-
-    plot_title = ""
-    if out_feature == 0:
-        plot_title = "gflops_scattering"
-    elif out_feature == 1:
-        plot_title = "energy_effiency_scattering"
+    plot.get_figure().savefig("{}/{}/scaterring_{}.png".format(path, model_name, name))
     
-    plt.title(plot_title)
-    plot = sns.lineplot(x=indentity, y=indentity)
-    plot.get_figure().savefig("{}/svr/{}_{}.png".format(path, plot_title, name))
+    if model_name == "tree":
+        plt.clf()
+        features = validation_dataset.features
+        features.append("implementation")
+        plot_tree(model.tree, filled=True, feature_names=features)
+        plt.savefig("{}/tree/{}.pdf".format(path, name))
 
 def plot_prediction_dispersion_mlp(model:torch.nn.Module, 
                                validation_dataset:db.SparseMatrixDataset,
                                name:str, 
                                path:str):
-    
-    
     length_dataset = len(validation_dataset)
     predictions = []
     expectations = []

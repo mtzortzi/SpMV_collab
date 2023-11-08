@@ -80,7 +80,7 @@ if __name__ == "__main__":
                         system_used,
                         0)
         name_gflops = "svr_gflops"
-        runners.plot_prediction_dispersion_svr(model_gflops, validation_dataset, name_gflops, path, 0)
+        runners.plot_prediction_dispersion_sklearn(model_gflops, validation_dataset, name_gflops, path, 0, model_used)
 
         print("Running svr on energy efficiency predictions")
         model_energy_efficiency = runners.run_svr(SVR_globals.kernel,
@@ -91,7 +91,7 @@ if __name__ == "__main__":
                         system_used,
                         1)
         name_energy_efficiency = "svr_energy_efficiency"
-        runners.plot_prediction_dispersion_svr(model_energy_efficiency, validation_dataset, name_energy_efficiency, path, 1)
+        runners.plot_prediction_dispersion_sklearn(model_energy_efficiency, validation_dataset, name_energy_efficiency, path, 1, model_used)
     
     elif model_used == "tree":
         print("running decision trees")
@@ -104,14 +104,10 @@ if __name__ == "__main__":
         print("Running tree on gflops predictions")
         tree_gflops = runners.run_tree(Tree_globals.max_depth, csv_path, system_used, 0)
         name_gflops = "tree_gflops"
-        runners.plot_prediction_dispersion_tree(tree_gflops, validation_dataset, name_gflops, path, 0)
+        runners.plot_prediction_dispersion_sklearn(tree_gflops, validation_dataset, name_gflops, path, 0, model_used)
 
 
         print("Running tree on energy efficiency predictions")
         tree_energy_efficiency = runners.run_tree(Tree_globals.max_depth, csv_path, system_used, 1)
         name_energy_efficiency = "tree_energy_efficiency"
-        runners.plot_prediction_dispersion_tree(tree_energy_efficiency, validation_dataset, name_energy_efficiency, path, 1)
-
-        
-
-        
+        runners.plot_prediction_dispersion_sklearn(tree_energy_efficiency, validation_dataset, name_energy_efficiency, path, 1, model_used)
