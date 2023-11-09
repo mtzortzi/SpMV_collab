@@ -115,7 +115,7 @@ if __name__ == "__main__":
         csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
         validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
         validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
-        path = g.MODEL_PATH + "{}".format(system_used)
+        path = g.MODEL_PATH + "{}/svr".format(system_used)
         
         print("Running svr on gflops predictions")
         # Running model
@@ -128,7 +128,7 @@ if __name__ == "__main__":
                         0)
         # Plotting predictions
         name_gflops = "svr_gflops"
-        runners.plot_prediction_dispersion_sklearn(model_gflops, validation_dataset, name_gflops, path, 0, model_used)
+        runners.plot_prediction_dispersion_sklearn(model_gflops, validation_dataset, validation_loader, name_gflops, path, 0, model_used)
 
         # Computing average loss on validation dataset
         avg_loss : torch.Tensor = runners.average_loss_sklearn(model_gflops, validation_dataset, 0)
@@ -146,7 +146,7 @@ if __name__ == "__main__":
         
         # Plotting predictions
         name_energy_efficiency = "svr_energy_efficiency"
-        runners.plot_prediction_dispersion_sklearn(model_energy_efficiency, validation_dataset, name_energy_efficiency, path, 1, model_used)
+        runners.plot_prediction_dispersion_sklearn(model_energy_efficiency, validation_dataset, validation_loader, name_energy_efficiency, path, 1, model_used)
 
         # Computing average loss on validation dataset
         avg_loss : torch.Tensor = runners.average_loss_sklearn(model_energy_efficiency, validation_dataset, 1)
@@ -157,7 +157,8 @@ if __name__ == "__main__":
         csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
         csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
         validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
-        path = g.MODEL_PATH + "{}".format(system_used)
+        validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
+        path = g.MODEL_PATH + "{}/tree".format(system_used)
         
         # Running model
         print("Running tree on gflops predictions")
@@ -165,7 +166,7 @@ if __name__ == "__main__":
         name_gflops = "tree_gflops"
 
         # Plotting predictions
-        runners.plot_prediction_dispersion_sklearn(tree_gflops, validation_dataset, name_gflops, path, 0, model_used)
+        runners.plot_prediction_dispersion_sklearn(tree_gflops, validation_dataset, validation_loader, name_gflops, path, 0, model_used)
 
         # Computing average loss on validation dataset
         avg_loss : torch.Tensor = runners.average_loss_sklearn(tree_gflops, validation_dataset, 0)
@@ -178,7 +179,7 @@ if __name__ == "__main__":
         name_energy_efficiency = "tree_energy_efficiency"
 
         # Plotting predictions
-        runners.plot_prediction_dispersion_sklearn(tree_energy_efficiency, validation_dataset, name_energy_efficiency, path, 1, model_used)
+        runners.plot_prediction_dispersion_sklearn(tree_energy_efficiency, validation_dataset, validation_loader, name_energy_efficiency, path, 1, model_used)
 
         # Computing average loss on validation dataset
         avg_loss : torch.Tensor = runners.average_loss_sklearn(tree_energy_efficiency, validation_dataset, 1)

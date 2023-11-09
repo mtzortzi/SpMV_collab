@@ -131,6 +131,28 @@ def run_svr(kernel, C, epsilon, gamma, csv_path, system, out_feature):
         saved_model_path = MODEL_PATH + "{}/svr/svr_energy_efficiency".format(system)
     
     torch.save(svr_model.state_dict(), saved_model_path)
+
+    # Ploting prediction dispersion for 5% of the train set
+    dataset_indices = list(range(len(dataset)))
+    split = int(np.floor(0.05 * len(dataset)))
+    
+    np.random.seed(42)
+    np.random.shuffle(dataset_indices)
+    _, validation_indices = dataset_indices[split:], dataset_indices[:split]
+    validation_sampler = SubsetRandomSampler(validation_indices)
+    validation_loader = DataLoader(dataset, sampler=validation_sampler)
+
+    if not(os.path.exists(MODEL_PATH + "{}/svr".format(system))):
+        os.makedirs(MODEL_PATH + "{}/svr".format(system))
+    
+    name = ""
+    if out_feature == 0:
+        name = "svr_gflops_validation"
+    elif out_feature == 1:
+        name = "svr_energy_efficiency_validation"
+    
+    path = MODEL_PATH + "{}/svr".format(system)
+    plot_prediction_dispersion_sklearn(svr_model, dataset, validation_loader, name, path, out_feature, "svr")
     return svr_model 
 
 def run_tree(max_depth, csv_path, system, out_feature):
@@ -142,6 +164,29 @@ def run_tree(max_depth, csv_path, system, out_feature):
     elif out_feature == 1:
         saved_model_path = MODEL_PATH + "{}/tree/tree_energy_efficiency".format(system)
     torch.save(tree_model.state_dict(), saved_model_path)
+
+    # Ploting prediction dispersion for 5% of the train set
+    dataset_indices = list(range(len(dataset)))
+    split = int(np.floor(0.05 * len(dataset)))
+    
+    np.random.seed(42)
+    np.random.shuffle(dataset_indices)
+    _, validation_indices = dataset_indices[split:], dataset_indices[:split]
+    validation_sampler = SubsetRandomSampler(validation_indices)
+    validation_loader = DataLoader(dataset, sampler=validation_sampler)
+
+    if not(os.path.exists(MODEL_PATH + "{}/tree".format(system))):
+        os.makedirs(MODEL_PATH + "{}/tree".format(system))
+    
+    name = ""
+    if out_feature == 0:
+        name = "tree_gflops_validation"
+    elif out_feature == 1:
+        name = "tree_energy_efficiency_validation"
+    
+    path = MODEL_PATH + "{}/tree".format(system)
+    plot_prediction_dispersion_sklearn(tree_model, dataset, validation_loader, name, path, out_feature, "tree")
+
     return tree_model
 
 def load_mlp_model(activation_fn, 
@@ -176,32 +221,33 @@ def load_tree_model(max_depth, name, system):
     return model
 
 def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
-                                   validation_dataset:db.SparseMatrixDataset,
+                                   dataset:db.SparseMatrixDataset,
+                                   loader:DataLoader,
                                    name:str,
                                    path:str,
                                    out_feature:int,
                                    model_name:str):
     
     assert model_name in models
-    length_dataset = len(validation_dataset)
     predictions = []
     expectations = []
-    for idx in range(length_dataset):
-        (X, Y) = validation_dataset[idx]
+    for batch in loader:
+        (X, Y) = batch
+        (X, Y) = (X[0], Y[0])
         input = np.array([X.numpy()])
         y_pred = model(input)
         if out_feature == 0:
-            y_pred_unscaled = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(y_pred.reshape(-1, 1)))
-            expectation = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(Y[out_feature].view(-1, 1)))
+            y_pred_unscaled = torch.tensor(dataset.scaler_gflops.inverse_transform(y_pred.reshape(-1, 1)))
+            expectation = torch.tensor(dataset.scaler_gflops.inverse_transform(Y[out_feature].view(-1, 1)))
         elif out_feature == 1:
-            y_pred_unscaled = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(y_pred.reshape(-1, 1)))
-            expectation = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(Y[out_feature].view(-1, 1)))
+            y_pred_unscaled = torch.tensor(dataset.scaler_energy_efficiency.inverse_transform(y_pred.reshape(-1, 1)))
+            expectation = torch.tensor(dataset.scaler_energy_efficiency.inverse_transform(Y[out_feature].view(-1, 1)))
         
         predictions.append(y_pred_unscaled.numpy().tolist()[0][0])
         expectations.append(expectation.numpy().tolist()[0][0])
     
     plt.clf()
-    implementations = validation_dataset.dataframe["implementation"]
+    implementations = get_implementations_list(loader, dataset)
     if out_feature == 0:
         identity = np.arange(min(expectations), max(expectations))
     elif out_feature == 1:
@@ -221,14 +267,14 @@ def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
         plot_title = "energy_effiency_scattering"
     
     plt.title(plot_title)
-    plot.get_figure().savefig("{}/{}/scaterring_{}.png".format(path, model_name, name))
+    plot.get_figure().savefig("{}/scaterring_{}.png".format(path, name))
     
     if model_name == "tree":
         plt.clf()
-        features = validation_dataset.features
+        features = dataset.features
         features.append("implementation")
         plot_tree(model.tree, filled=True, feature_names=features)
-        plt.savefig("{}/tree/{}.pdf".format(path, name))
+        plt.savefig("{}/{}.pdf".format(path, name))
 
 def plot_prediction_dispersion_mlp(model:torch.nn.Module, 
                                    dataset:dataReader.SparseMatrixDataset,
@@ -280,8 +326,6 @@ def plot_prediction_dispersion_mlp(model:torch.nn.Module,
     plot.get_figure().savefig("{}/energy_efficiency_scattering_{}.png".format(path, name))
     plt.clf()
 
-
-
 def average_loss_mlp(model:torch.nn.Module, validation_loader:DataLoader, validation_dataset:db.SparseMatrixDataset, out_feature:int):
     print("Average loss mlp")
     avg_loss_lst : list = []
@@ -298,7 +342,6 @@ def average_loss_mlp(model:torch.nn.Module, validation_loader:DataLoader, valida
     return sum(avg_loss_lst)/len(avg_loss_lst)  
 
 def average_loss_sklearn(model:torch.nn.Module, validation_dataset:db.SparseMatrixDataset, out_feature:int):
-    print("Average loss sklearn")
     length_dataset = len(validation_dataset)
     avg_loss_lst : list = []
     loss_fnc = MeanAbsolutePercentageError()
