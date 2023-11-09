@@ -1,6 +1,7 @@
 import numpy as np
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import DataLoader
+from dataReader import SparseMatrixDataset
 
 def generate_random_int(min : int, max : int) -> int:
     assert max > min
@@ -12,3 +13,11 @@ def generate_random_int(min : int, max : int) -> int:
 def MAPELoss(output, target):
     return torch.mean(torch.abs((target - output) / target))
 
+def get_implementations_list(loader: DataLoader, dataset:SparseMatrixDataset):
+    implementation_list : list = list()
+    inv_mappings = {v: k for k, v in dataset.mappings.items()}
+    for batch in loader:
+        implementation = batch[0][0][-1].tolist()
+        implementation_list.append(inv_mappings[implementation])
+    return implementation_list
+    

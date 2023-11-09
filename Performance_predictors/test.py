@@ -1,6 +1,5 @@
-import utils_func
-import torch
+import os
 
-a = 1
-t = [a]*2
-print(t)
+temp = "yo"
+if not(os.path.exists("./testdir_{}".format(temp))):
+    os.makedirs("./testdir_{}".format(temp))

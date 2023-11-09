@@ -6,6 +6,7 @@ import MLP.globals as globals
 from tqdm import tqdm
 import numpy as np
 import model_runners as runners
+import os
 
 class MlpPredictor(torch.nn.Module):
     def __init__(self, activation_fn, 
@@ -79,7 +80,7 @@ def fit(tbl_test_losses : list,
         model : MlpPredictor, 
         train_loader : DataLoader, 
         test_loader : DataLoader, 
-        validation_dataset : Dataset, 
+        prediction_dataset : Dataset,
         optimizer, 
         loss_fn, 
         system : str):
@@ -98,10 +99,14 @@ def fit(tbl_test_losses : list,
 
         #Validation
         if epoch%10 == 0:
-            name = "mlp_{}epochs".format(epoch)
-            path = MODEL_PATH + "{}".format(system)
-            saved_model_path = MODEL_PATH + "{}/mlp_{}epochs".format(system, epoch)
-            runners.plot_prediction_dispersion_mlp(model, validation_dataset, name, path)
+            if not(os.path.exists(MODEL_PATH + "{}/mlp/{}".format(system, epoch))):
+                os.makedirs(MODEL_PATH + "{}/mlp/{}".format(system, epoch))
+            name_prediction = "mlp_{}_epochs_prediction".format(epoch)
+            path = MODEL_PATH + "{}/mlp/{}".format(system, epoch)
+            saved_model_path = MODEL_PATH + "{}/mlp/{}/mlp_{}epochs".format(system, epoch, epoch)
+
+            prediction_loader = DataLoader(prediction_dataset, batch_size=1, shuffle=True)
+            runners.plot_prediction_dispersion_mlp(model, prediction_dataset, prediction_loader, name_prediction, path)
             torch.save(model.state_dict(), saved_model_path)
     
     s = getShape(tbl_train_counter)

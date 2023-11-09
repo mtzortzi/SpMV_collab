@@ -7,6 +7,7 @@ import globals as g
 import argparse
 import numpy as np
 import torch
+from torch.utils.data import DataLoader
 from Tree.model import *
 
 
@@ -47,14 +48,17 @@ if __name__ == "__main__":
                                            MLP_globals.hidden_size,
                                            model_name,
                                            system_used)
+            
             validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
+            validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
             name = "mlp_{}epochs_load".format(MLP_globals.nb_epochs)
             path = g.MODEL_PATH + "{}/mlp".format(system_used)
-            runners.plot_prediction_dispersion_mlp(model, validation_dataset, name, path)
-            avg_loss_gflops = runners.average_loss_mlp(model, validation_dataset, 0)
+            runners.plot_prediction_dispersion_mlp(model, validation_dataset, validation_loader, name, path)
+
+            avg_loss_gflops = runners.average_loss_mlp(model, validation_loader, validation_dataset, 0)
             print("Avg loss of model mlp on gflops : {}%".format(avg_loss_gflops.detach().tolist()*100))
 
-            avg_loss_energy_efficiency = runners.average_loss_mlp(model, validation_dataset, 1)
+            avg_loss_energy_efficiency = runners.average_loss_mlp(model, validation_loader, validation_dataset, 1)
             print("Avg loss of model mlp on energy efficiency : {}%".format(avg_loss_energy_efficiency.detach().tolist()*100))
         
         elif model_used == "tree":
@@ -82,7 +86,8 @@ if __name__ == "__main__":
         csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
         csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
         validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
-        path = g.MODEL_PATH + "{}".format(system_used)
+        validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
+        path = g.MODEL_PATH + "{}/mlp/{}".format(system_used, MLP_globals.nb_epochs)
 
         # Running model
         mlp_model = runners.run_mlp(MLP_globals.activation_fn,
@@ -94,14 +99,14 @@ if __name__ == "__main__":
                         system_used)
         
         # Plotting predictions
-        name = "mlp_{}epochs".format(MLP_globals.nb_epochs)
-        runners.plot_prediction_dispersion_mlp(mlp_model, validation_dataset, name, path)
+        name = "mlp_{}epochs_real_data".format(MLP_globals.nb_epochs)
+        runners.plot_prediction_dispersion_mlp(mlp_model, validation_dataset, validation_loader, name, path)
 
         # Computing average loss on validation dataset
-        avg_loss_gflops = runners.average_loss_mlp(mlp_model, validation_dataset, 0)
+        avg_loss_gflops = runners.average_loss_mlp(mlp_model, validation_loader, validation_dataset, 0)
         print("Avg loss of model mlp on gflops : {}%".format(avg_loss_gflops.detach().tolist()*100))
 
-        avg_loss_energy_efficiency = runners.average_loss_mlp(mlp_model, validation_dataset, 1)
+        avg_loss_energy_efficiency = runners.average_loss_mlp(mlp_model, validation_loader, validation_dataset, 1)
         print("Avg loss of model mlp on energy efficiency : {}%".format(avg_loss_energy_efficiency.detach().tolist()*100))
         
     elif model_used == "svr":
@@ -109,6 +114,7 @@ if __name__ == "__main__":
         csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
         csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
         validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
+        validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
         path = g.MODEL_PATH + "{}".format(system_used)
         
         print("Running svr on gflops predictions")

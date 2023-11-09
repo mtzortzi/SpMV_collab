@@ -16,7 +16,8 @@ from sklearn import preprocessing
 import seaborn as sns
 from sklearn.tree import plot_tree
 from Tree.model import TreePredictor
-from utils_func import MAPELoss
+from utils_func import get_implementations_list
+import os
 
 def run_mlp(activation_function,
             nb_hidden_layers,
@@ -36,7 +37,8 @@ def run_mlp(activation_function,
     dataset = dataReader.SparseMatrixDataset(csv_path)
     optimizer = torch.optim.SGD(mlp_model.parameters(), lr=MLP_globals.lr)
 
-    validation_split = 0.2
+    test_split = 0.2
+    validation_split = 0.05
     shuffle_dataset = True
     random_seed = 42
     n_iteration = MLP_globals.nb_epochs
@@ -45,20 +47,30 @@ def run_mlp(activation_function,
     dataset_size = len(dataset)
     indices = list(range(dataset_size))
     
-    split = int(np.floor(validation_split * dataset_size))
+    split = int(np.floor(test_split * dataset_size))
     if shuffle_dataset:
         np.random.seed(random_seed)
         np.random.shuffle(indices)
-    train_indices, val_indices = indices[split:], indices[:split]
+    train_indices, test_indices = indices[split:], indices[:split]
+
+    split_2 = int(np.floor(validation_split * len(test_indices)))
+    if shuffle_dataset:
+        np.random.seed(random_seed)
+        np.random.shuffle(test_indices)
+
+    test_indices, validation_indices = test_indices[split_2:], test_indices[:split_2]
 
     # Creating dataset for train and validation
     train_sampler = SubsetRandomSampler(train_indices)
-    test_sampler = SubsetRandomSampler(val_indices)
+    test_sampler = SubsetRandomSampler(test_indices)
+    validation_sampler = SubsetRandomSampler(validation_indices)
     train_loader = DataLoader(dataset,sampler=train_sampler)
     test_loader = DataLoader(dataset, sampler=test_sampler)
+    validation_loader = DataLoader(dataset, sampler=validation_sampler)
+    
 
     csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}.csv".format(system)
-    validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
+    prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
 
     #Fitting the neural network
     (tbl_train_counter, tbl_train_losses, tbl_test_losses) = MLP_model.fit([],
@@ -67,16 +79,23 @@ def run_mlp(activation_function,
                                                                            mlp_model,
                                                                            train_loader,
                                                                            test_loader,
-                                                                           validation_dataset,
+                                                                           prediction_dataset,
                                                                            optimizer,
                                                                            MLP_globals.loss_fn,
                                                                            system)
     
+    
     #Saving the last model
-    saved_model_path = MODEL_PATH + "{}/mlp_{}epochs".format(system, n_iteration)
+    saved_model_path = MODEL_PATH + "{}/mlp/{}/mlp_{}epochs".format(system, n_iteration, n_iteration)
     torch.save(mlp_model.state_dict(), saved_model_path)
    
-
+    # Ploting prediction dispersion for 5% of the train set
+    if not(os.path.exists(MODEL_PATH + "{}/mlp/{}".format(system, n_iteration))):
+        os.makedirs(MODEL_PATH + "{}/mlp/{}".format(system, n_iteration))
+    name = "mlp_{}epochs_validation".format(n_iteration)
+    path = MODEL_PATH + "{}/mlp/{}".format(system, n_iteration)
+    plot_prediction_dispersion_mlp(mlp_model, dataset, validation_loader, name, path)
+    
     #Ploting loss history
     idx_test_counter = (len(tbl_train_counter)-1)//n_iteration
     test_counter = [tbl_train_counter[idx_test_counter*i] for i in range(n_iteration + 1)]
@@ -85,36 +104,17 @@ def run_mlp(activation_function,
     plt.legend(['Train Loss', 'Test Loss'], loc = 'upper right')
     plt.xlabel('number of training examples seen')
     plt.ylabel('negative log likelihood loss')
-    plt.show()
-    saved_figure_path = MODEL_PATH + "/{}/mlp_{}_{}epochs.png".format(system, system, n_iteration)
+    saved_figure_path = MODEL_PATH + "/{}/mlp/{}/mlp_{}_{}epochs_loss_history.png".format(system, n_iteration, system, n_iteration)
     plt.savefig(saved_figure_path)
+    plt.clf()
 
     return mlp_model
 
 def predict_mlp(model, input, scaler_gflops:preprocessing.MinMaxScaler, scaler_energy_efficiency:preprocessing.MinMaxScaler):
     Y_pred = model(input.float())
-
-    # loss = torch.nn.MSELoss()
-
-    # print("Prediction (scaled) : {}".format(Y_pred))
-    # print("Expected (scaled) : {}".format(Y))
-    # print("Loss (scaled) : {}".format(loss(Y_pred, Y)))
-    # print("Loss % (scaled) : {}".format(utils_func.MAPELoss(Y_pred, Y)))
-          
-    
-    gflops_predicted_unscaled = torch.tensor(scaler_gflops.inverse_transform(Y_pred[0].detach().view(1, -1)))
-    energy_efficiency_predicted_unscaled = torch.tensor(scaler_energy_efficiency.inverse_transform(Y_pred[1].detach().view(1, -1)))
+    gflops_predicted_unscaled = torch.tensor(scaler_gflops.inverse_transform(Y_pred[0][0].detach().view(1, -1)))
+    energy_efficiency_predicted_unscaled = torch.tensor(scaler_energy_efficiency.inverse_transform(Y_pred[0][1].detach().view(1, -1)))
     prediction = torch.cat((gflops_predicted_unscaled, energy_efficiency_predicted_unscaled), 1)
-
-
-    # gflops_unscaled = torch.tensor(dataset.scaler_gflops.inverse_transform(Y[0].view(1, -1)))
-    # energy_efficiency_unscaled = torch.tensor(dataset.scaler_energy_efficiency.inverse_transform(Y[0].view(1, -1)))
-    # expected = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1)    
-
-    # print("Prediction : {}".format(prediction))
-    # print("Expected : {}".format(expected))
-    # print("Loss : {}".format(loss(prediction, expected)))
-    # print("Loss % : {}".format(utils_func.MAPELoss(prediction, expected)))
     return prediction
 
 def run_svr(kernel, C, epsilon, gamma, csv_path, system, out_feature):
@@ -231,22 +231,24 @@ def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
         plt.savefig("{}/tree/{}.pdf".format(path, name))
 
 def plot_prediction_dispersion_mlp(model:torch.nn.Module, 
-                                   validation_dataset:db.SparseMatrixDataset,
+                                   dataset:dataReader.SparseMatrixDataset,
+                                   loader: DataLoader,
                                    name:str, 
                                    path:str):
     
-    length_dataset = len(validation_dataset)
+    
     predictions = []
     expectations = []
-    for idx in range(length_dataset):
-        (X, Y) = validation_dataset[idx]
-        prediction = predict_mlp(model, X, validation_dataset.scaler_gflops, validation_dataset.scaler_energy_efficiency)
-        gflops_unscaled = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(Y[0].view(1, -1)))
-        energy_efficiency_unscaled = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(Y[1].view(1, -1)))
+    for batch in loader:
+        (X, Y) = batch
+        prediction = predict_mlp(model, X, dataset.scaler_gflops, dataset.scaler_energy_efficiency)
+        gflops_unscaled = torch.tensor(dataset.scaler_gflops.inverse_transform(Y[0][0].view(1, -1)))
+        energy_efficiency_unscaled = torch.tensor(dataset.scaler_energy_efficiency.inverse_transform(Y[0][1].view(1, -1)))
         expectation = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1) 
         predictions.append(prediction.numpy().flatten().tolist())
         expectations.append(expectation.numpy().flatten().tolist())
 
+    
     gflops_predictions = [val[0] for val in predictions[:]]
     energy_efficiency_predictions = [val[1] for val in predictions[:]]
 
@@ -256,8 +258,9 @@ def plot_prediction_dispersion_mlp(model:torch.nn.Module,
     identity_gflops = np.arange(min(gflops_expectations), max(gflops_expectations), 10)
     identity_energy_efficiency = np.arange(min(energy_efficiency_expectations), max(energy_efficiency_expectations), 0.01)
 
-    implementations = validation_dataset.dataframe["implementation"]
-    
+    # implementations = dataset.dataframe["implementation"]
+    implementations = get_implementations_list(loader, dataset)
+
     sns.regplot(x=gflops_predictions, y=gflops_expectations, scatter=False, fit_reg=True, color="blue")
     sns.scatterplot(x=gflops_predictions, y=gflops_expectations, hue=implementations)
     plot = sns.lineplot(x=identity_gflops, y=identity_gflops, color="red")
@@ -277,20 +280,22 @@ def plot_prediction_dispersion_mlp(model:torch.nn.Module,
     plot.get_figure().savefig("{}/energy_efficiency_scattering_{}.png".format(path, name))
     plt.clf()
 
-def average_loss_mlp(model:torch.nn.Module, validation_dataset:db.SparseMatrixDataset, out_feature:int):
+
+
+def average_loss_mlp(model:torch.nn.Module, validation_loader:DataLoader, validation_dataset:db.SparseMatrixDataset, out_feature:int):
     print("Average loss mlp")
-    length_dataset = len(validation_dataset)
     avg_loss_lst : list = []
     loss_fnc = MeanAbsolutePercentageError()
-    for idx in range(length_dataset):
-        (X, Y) = validation_dataset[idx]
+
+    for batch in validation_loader:
+        (X, Y) = batch
         prediction = predict_mlp(model, X, validation_dataset.scaler_gflops, validation_dataset.scaler_energy_efficiency)
-        gflops_unscaled = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(Y[0].view(1, -1)))
-        energy_efficiency_unscaled = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(Y[1].view(1, -1)))
-        expectation = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1)
+        gflops_unscaled = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(Y[0][0].view(1, -1)))
+        energy_efficiency_unscaled = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(Y[0][1].view(1, -1)))
+        expectation = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1) 
         loss = loss_fnc(prediction, expectation)
         avg_loss_lst.append(loss)
-    return sum(avg_loss_lst)/len(avg_loss_lst)
+    return sum(avg_loss_lst)/len(avg_loss_lst)  
 
 def average_loss_sklearn(model:torch.nn.Module, validation_dataset:db.SparseMatrixDataset, out_feature:int):
     print("Average loss sklearn")
