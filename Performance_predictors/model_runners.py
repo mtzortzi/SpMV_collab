@@ -38,7 +38,7 @@ def run_mlp(activation_function,
     optimizer = torch.optim.SGD(mlp_model.parameters(), lr=MLP_globals.lr)
 
     test_split = 0.2
-    validation_split = 0.05
+    validation_split = 0.25 # 5% of the 20% remaining
     shuffle_dataset = True
     random_seed = 42
     n_iteration = MLP_globals.nb_epochs
