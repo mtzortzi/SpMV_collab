@@ -61,25 +61,16 @@ if __name__ == "__main__":
             avg_loss_energy_efficiency = runners.average_loss_mlp(model, validation_loader, validation_dataset, 1)
             print("Avg loss of model mlp on energy efficiency : {}%".format(avg_loss_energy_efficiency.detach().tolist()*100))
         
-        elif model_used == "tree":
+        elif model_used == "svr":
             csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
+            models_name_gflops = "svr_gflops"
+            model_gflops = runners.load_svr_model(models_name_gflops, system_used)
             validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
+            validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
 
-            model_name_gflops = "tree_gflops"
-            path = g.MODEL_PATH + "{}/tree".format(system_used)
-            model_gflops = runners.load_tree_model(Tree_globals.max_depth,
-                                                   model_name_gflops,
-                                                   system_used)
-            name_gflops = "tree_gflops_load"
-            runners.plot_prediction_dispersion_sklearn(model_gflops, validation_dataset, name_gflops, path, 0, model_used)
-
-            model_name_energy_efficiency = "tree_energy_effiency"
-            path = g.MODEL_PATH + "{}/tree".format(system_used)
-            model_energy_efficiency = runners.load_tree_model(Tree_globals.max_depth,
-                                                              model_name_energy_efficiency,
-                                                              system_used)
-            name_energy_efficiency = "tree_energy_efficiency_load"
-            runners.plot_prediction_dispersion_sklearn(model_energy_efficiency, validation_dataset, name_gflops, path, 1, model_used)
+            graph_name_gflops = "svr_load"
+            path = g.MODEL_PATH + "{}/svr".format(system_used)
+            runners.plot_prediction_dispersion_mlp(model_gflops, validation_dataset, validation_loader, graph_name_gflops, path)
             
 
     elif model_used == "mlp":

@@ -18,6 +18,7 @@ from sklearn.tree import plot_tree
 from Tree.model import TreePredictor
 from utils_func import get_implementations_list
 import os
+from joblib import dump, load
 
 def run_mlp(activation_function,
             nb_hidden_layers,
@@ -121,16 +122,15 @@ def run_svr(kernel, C, epsilon, gamma, csv_path, system, out_feature):
     dataset = dataReader.SparseMatrixDataset(csv_path)
 
     svr_model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma)
-    # SVR_model.train_SVR_Nystroem(svr_model, dataset)
-    # SVR_model.train_LinearSVR(svr_model, dataset)
     SVR_model.train_usualSVR(svr_model, dataset, out_feature)
     #Saving the last model
+    saved_model_path = ""
     if out_feature == 0:  
         saved_model_path = MODEL_PATH + "{}/svr/svr_gflops".format(system)
     elif out_feature == 1:
         saved_model_path = MODEL_PATH + "{}/svr/svr_energy_efficiency".format(system)
     
-    torch.save(svr_model.state_dict(), saved_model_path)
+    dump(svr_model.usualSVR, saved_model_path + ".joblib")
 
     # Ploting prediction dispersion for 5% of the train set
     dataset_indices = list(range(len(dataset)))
@@ -206,11 +206,10 @@ def load_mlp_model(activation_fn,
     model.load_state_dict(torch.load(model_path))
     return model
 
-def load_svr_model(kernel, C, epsilon, gamma, name, system):
+def load_svr_model(name, system) -> SVR_model.SvrPredictor:
     print("loading svr model")
-    model_path = MODEL_PATH + "/{}/svr/{}".format(system, name)
-    model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma)
-    model.load_state_dict(torch.load(model_path))
+    model_path = MODEL_PATH + "{}/svr/{}".format(system, name)
+    model = load(model_path + ".joblib")
     return model
 
 def load_tree_model(max_depth, name, system):
