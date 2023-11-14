@@ -89,14 +89,14 @@ def run_mlp(activation_function,
     
     
     #Saving the last model
-    saved_model_path = MODEL_PATH + "{}/mlp/{}/mlp_{}epochs_{}".format(system, n_iteration, n_iteration, implementation)
+    saved_model_path = MODEL_PATH + "{}/mlp/{}/{}/mlp_{}epochs_{}".format(system, n_iteration, implementation, n_iteration, implementation)
     torch.save(mlp_model.state_dict(), saved_model_path)
    
     # Ploting prediction dispersion for 5% of the train set
-    if not(os.path.exists(MODEL_PATH + "{}/mlp/{}".format(system, n_iteration))):
-        os.makedirs(MODEL_PATH + "{}/mlp/{}".format(system, n_iteration))
-    name = "mlp_{}epochs_validation_{}".format(n_iteration, implementation)
-    path = MODEL_PATH + "{}/mlp/{}".format(system, n_iteration)
+    if not(os.path.exists(MODEL_PATH + "{}/mlp/{}/{}".format(system, n_iteration, implementation))):
+        os.makedirs(MODEL_PATH + "{}/mlp/{}/{}".format(system, n_iteration, implementation))
+    name = "mlp_{}epochs_validation".format(n_iteration)
+    path = MODEL_PATH + "{}/mlp/{}/{}".format(system, n_iteration, implementation)
     plot_prediction_dispersion_mlp(mlp_model, dataset, validation_loader, name, path, implementation)
     
     #Ploting loss history
@@ -107,7 +107,7 @@ def run_mlp(activation_function,
     plt.legend(['Train Loss', 'Test Loss'], loc = 'upper right')
     plt.xlabel('number of training examples seen')
     plt.ylabel('negative log likelihood loss')
-    saved_figure_path = MODEL_PATH + "/{}/mlp/{}/mlp_{}_{}epochs_loss_history.png".format(system, n_iteration, system, n_iteration)
+    saved_figure_path = MODEL_PATH + "/{}/mlp/{}/{}/mlp_{}_{}_{}epochs_loss_history.png".format(system, n_iteration, implementation, system, implementation, n_iteration)
     plt.savefig(saved_figure_path)
     plt.clf()
 

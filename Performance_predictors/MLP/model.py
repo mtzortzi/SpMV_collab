@@ -100,14 +100,14 @@ def fit(tbl_test_losses : list,
 
         #Validation
         if epoch%10 == 0:
-            if not(os.path.exists(MODEL_PATH + "{}/mlp/{}".format(system, epoch))):
-                os.makedirs(MODEL_PATH + "{}/mlp/{}".format(system, epoch))
-            name_prediction = "mlp_{}_epochs_prediction_{}".format(epoch, implementation)
-            path = MODEL_PATH + "{}/mlp/{}".format(system, epoch)
-            saved_model_path = MODEL_PATH + "{}/mlp/{}/mlp_{}epochs_{}".format(system, epoch, epoch, implementation)
+            if not(os.path.exists(MODEL_PATH + "{}/mlp/{}/{}".format(system, epoch, implementation))):
+                os.makedirs(MODEL_PATH + "{}/mlp/{}/{}".format(system, epoch, implementation))
+            name_prediction = "mlp_{}_epochs_prediction".format(epoch)
+            path = MODEL_PATH + "{}/mlp/{}/{}".format(system, epoch, implementation)
+            saved_model_path = MODEL_PATH + "{}/mlp/{}/{}/mlp_{}epochs_{}".format(system, epoch, implementation, epoch, implementation)
 
             prediction_loader = DataLoader(prediction_dataset, batch_size=1, shuffle=True)
-            runners.plot_prediction_dispersion_mlp(model, prediction_dataset, prediction_loader, name_prediction, path)
+            runners.plot_prediction_dispersion_mlp(model, prediction_dataset, prediction_loader, name_prediction, path, implementation)
             torch.save(model.state_dict(), saved_model_path)
     
     s = getShape(tbl_train_counter)

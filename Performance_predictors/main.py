@@ -87,7 +87,7 @@ if __name__ == "__main__":
         csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)
         validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
         validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
-        path = g.MODEL_PATH + "{}/mlp/{}".format(system_used, MLP_globals.nb_epochs)
+        path = g.MODEL_PATH + "{}/mlp/{}/{}".format(system_used, MLP_globals.nb_epochs, implementation)
 
         # Running model
         mlp_model = runners.run_mlp(MLP_globals.activation_fn,
@@ -100,8 +100,8 @@ if __name__ == "__main__":
                         implementation)
         
         # Plotting predictions
-        name = "mlp_{}epochs_real_data_{}".format(MLP_globals.nb_epochs, implementation)
-        runners.plot_prediction_dispersion_mlp(mlp_model, validation_dataset, validation_loader, name, path)
+        name = "mlp_{}epochs_real_data".format(MLP_globals.nb_epochs)
+        runners.plot_prediction_dispersion_mlp(mlp_model, validation_dataset, validation_loader, name, path, implementation)
 
         # Computing average loss on validation dataset
         avg_loss_gflops = runners.average_loss_mlp(mlp_model, validation_loader, validation_dataset, 0)
