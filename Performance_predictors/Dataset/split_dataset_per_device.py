@@ -46,24 +46,27 @@ def split_dataset_per_device_per_implementation(path_prefix, prefix, df):
 def split_CPU_dataset_on_cache_threshold(path_prefix, prefix, df, threshold):
     System = list(set(df['System']))[0]
 
-    mem_ranges = list(set(df['mem_range']))
-    smaller_than = []
-    larger_than  = []
-    for mem_range in mem_ranges:
-        mr_low = int(mem_range.split('-')[0].split('[')[1])
-        mr_high = int(mem_range.split('-')[1].split(']')[0])
-        if(mr_low>=threshold):
-            larger_than.append(mem_range)
-        else:
-            smaller_than.append(mem_range)
+    for implementation in list(set(df['implementation'])):
+        impl_df = df[df['implementation']==implementation]
+        
+        mem_ranges = list(set(impl_df['mem_range']))
+        smaller_than = []
+        larger_than  = []
+        for mem_range in mem_ranges:
+            mr_low = int(mem_range.split('-')[0].split('[')[1])
+            mr_high = int(mem_range.split('-')[1].split(']')[0])
+            if(mr_low>=threshold):
+                larger_than.append(mem_range)
+            else:
+                smaller_than.append(mem_range)
 
-    smaller_than_df = df[df['mem_range'].isin(smaller_than)]
-    larger_than_df  = df[df['mem_range'].isin(larger_than)]
+        smaller_than_df = impl_df[impl_df['mem_range'].isin(smaller_than)]
+        larger_than_df  = impl_df[impl_df['mem_range'].isin(larger_than)]
 
-    print(path_prefix + prefix + '/' + prefix + '_' + System + '_' + 'smaller_than_cache' + '.csv')
-    smaller_than_df.to_csv(path_prefix + prefix + '/' + prefix + '_' + System + '_' + 'smaller_than_cache' + '.csv', index=False )
-    print(path_prefix + prefix + '/' + prefix + '_' + System + '_' + 'larger_than_cache' + '.csv')
-    larger_than_df.to_csv(path_prefix + prefix + '/' + prefix + '_' + System + '_' + 'larger_than_cache' + '.csv',  index=False )
+        print(path_prefix + prefix + '/' + prefix + '_' + System + '_' + implementation + '_' + 'smaller_than_cache' + '.csv')
+        smaller_than_df.to_csv(path_prefix + prefix + '/' + prefix + '_' + System + '_' + implementation + '_' + 'smaller_than_cache' + '.csv', index=False )
+        print(path_prefix + prefix + '/' + prefix + '_' + System + '_' + implementation + '_' + 'larger_than_cache' + '.csv')
+        larger_than_df.to_csv(path_prefix + prefix + '/' + prefix + '_' + System + '_' + implementation + '_' + 'larger_than_cache' + '.csv',  index=False )
 
 all_format_AMD_EPYC_24_df  = pd.read_csv('./data/' + 'all_format/all_format_AMD-EPYC-24.csv')
 split_CPU_dataset_on_cache_threshold('./data/', 'all_format', all_format_AMD_EPYC_24_df, 128)
