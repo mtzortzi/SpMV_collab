@@ -83,7 +83,8 @@ def fit(tbl_test_losses : list,
         prediction_dataset : Dataset,
         optimizer, 
         loss_fn, 
-        system : str):
+        system : str,
+        implementation : str):
     
     test_losses = test(model, test_loader, loss_fn)
     tbl_test_losses.append(test_losses)
@@ -101,9 +102,9 @@ def fit(tbl_test_losses : list,
         if epoch%10 == 0:
             if not(os.path.exists(MODEL_PATH + "{}/mlp/{}".format(system, epoch))):
                 os.makedirs(MODEL_PATH + "{}/mlp/{}".format(system, epoch))
-            name_prediction = "mlp_{}_epochs_prediction".format(epoch)
+            name_prediction = "mlp_{}_epochs_prediction_{}".format(epoch, implementation)
             path = MODEL_PATH + "{}/mlp/{}".format(system, epoch)
-            saved_model_path = MODEL_PATH + "{}/mlp/{}/mlp_{}epochs".format(system, epoch, epoch)
+            saved_model_path = MODEL_PATH + "{}/mlp/{}/mlp_{}epochs_{}".format(system, epoch, epoch, implementation)
 
             prediction_loader = DataLoader(prediction_dataset, batch_size=1, shuffle=True)
             runners.plot_prediction_dispersion_mlp(model, prediction_dataset, prediction_loader, name_prediction, path)
