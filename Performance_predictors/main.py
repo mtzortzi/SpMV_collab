@@ -16,26 +16,35 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--model', metavar='MODEL', required=True, help='Model name to run')
     parser.add_argument('-s', '--system', metavar='SYSTEM', required=True, help='CPU/GPU name')
+    parser.add_argument('-i', '--implementation', metavar='IMPLEMENTATION', required=True, help='Implementation of the matrix')
     parser.add_argument('-l', '--load', action='store_true', help='Load the model described from it\'s hyperparameters in it\'s corresponfing global.py file and the -m parameter described above')
+
 
     args = parser.parse_args()
     args_data = vars(args)
 
     model_used = ""
     system_used = ""
+    implementation = ""
     load_model = False
     
     for arg, value in args_data.items():
-        if (arg == "model"):
+        if arg == "model":
             model_used = value
-        if (arg == "system"):
+        if arg == "system":
             system_used = value
-        if (arg == "load" and value):
+        if arg == "load" and value:
             load_model = True
+        if arg == "implementation":
+            implementation = value
     
 
     assert model_used in g.models
     assert system_used in g.hardware
+    if model_used == "AMD-EPYC-24":
+        assert implementation in g.IMPLEMENTATIONS_AMD_EPYC_24
+    elif model_used == "Tesla-A100":
+        assert implementation in g.IMPLEMENTATIONS_TESLA_A100
 
     if load_model :
         if model_used == "mlp":
@@ -74,11 +83,11 @@ if __name__ == "__main__":
             
 
     elif model_used == "mlp":
-        csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
-        csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
+        csv_path = g.DATA_PATH + "/all_format/all_format_{}_{}.csv".format(system_used, implementation)
+        csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)
         validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
         validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
-        path = g.MODEL_PATH + "{}/mlp/{}".format(system_used, MLP_globals.nb_epochs)
+        path = g.MODEL_PATH + "{}/mlp/{}/{}".format(system_used, MLP_globals.nb_epochs, implementation)
 
         # Running model
         mlp_model = runners.run_mlp(MLP_globals.activation_fn,
@@ -87,11 +96,12 @@ if __name__ == "__main__":
                         MLP_globals.out_dimension,
                         MLP_globals.hidden_size,
                         csv_path,
-                        system_used)
+                        system_used,
+                        implementation)
         
         # Plotting predictions
         name = "mlp_{}epochs_real_data".format(MLP_globals.nb_epochs)
-        runners.plot_prediction_dispersion_mlp(mlp_model, validation_dataset, validation_loader, name, path)
+        runners.plot_prediction_dispersion_mlp(mlp_model, validation_dataset, validation_loader, name, path, implementation)
 
         # Computing average loss on validation dataset
         avg_loss_gflops = runners.average_loss_mlp(mlp_model, validation_loader, validation_dataset, 0)

@@ -30,15 +30,6 @@ class SparseMatrixDataset(Dataset):
         # Adding the bandwidth feature to the X entry
         avg_bandwidth_scaled = torch.tensor(self.dataframe[self.features[-1]].to_numpy().reshape(-1, 1), dtype=torch.float32)
         self.x = torch.cat((self.x, avg_bandwidth_scaled), 1)
-
-        # Adding the implementation feature to the X entry
-        implementation_labels = self.dataframe["implementation"].unique().tolist() # Getting all unique labels of implementation
-        self.mappings = {k: i for i, k in enumerate(implementation_labels)} # Mapping one-hot-encoded labels
-
-        encoded_implementation = self.dataframe["implementation"].apply(lambda x: self.mappings[x]).to_numpy().reshape((-1, 1)) # Apply one hot encoded featre
-        t_encoded_implementation = torch.as_tensor(encoded_implementation, dtype=torch.float32) # Transfroming it into a tensor
-        self.x = torch.cat((self.x, t_encoded_implementation), 1)
-
         
         # Scaling gflops output
         gflops = self.dataframe[["gflops"]].values
