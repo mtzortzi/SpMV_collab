@@ -27,16 +27,21 @@ def run_mlp(activation_function,
             hidden_size,
             csv_path,
             system,
-            implementation):
+            implementation,
+            cache : str):
     print("running MLP")
 
     mlp_model = MLP_model.MlpPredictor(activation_function,
                                        nb_hidden_layers,
                                        in_dimension,
                                        out_dimension,
-                                       hidden_size,)
+                                       hidden_size)
     
-    dataset = dataReader.SparseMatrixDataset(csv_path)
+    
+    if implementation == "None":  
+        dataset = dataReader.SparseMatrixDataset(csv_path, False)
+    else :
+        dataset = dataReader.SparseMatrixDataset(csv_path, True)
     optimizer = torch.optim.SGD(mlp_model.parameters(), lr=MLP_globals.lr)
 
     test_split = 0.2
@@ -72,10 +77,12 @@ def run_mlp(activation_function,
     
 
     if implementation == "None":
-        csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}.csv".format(system)
+        csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}".format(system)
+        prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
     else:
         csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}_{}.csv".format(system, implementation)
-    prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
+        prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+
 
     #Fitting the neural network
     (tbl_train_counter, tbl_train_losses, tbl_test_losses) = MLP_model.fit([],
@@ -88,14 +95,21 @@ def run_mlp(activation_function,
                                                                            optimizer,
                                                                            MLP_globals.loss_fn,
                                                                            system,
-                                                                           implementation)
+                                                                           implementation,
+                                                                           cache)
     
     
     #Saving the last model
     if implementation == "None":
-        saved_model_path = MODEL_PATH + "{}/mlp/{}/mlp_{}epochs".format(system, n_iteration, n_iteration)
+        if cache != "None":
+            saved_model_path = MODEL_PATH + "{}/mlp/{}/mlp_{}epochs_{}_than_cache".format(system, n_iteration, n_iteration, cache)
+        else:
+            saved_model_path = MODEL_PATH + "{}/mlp/{}/mlp_{}epochs".format(system, n_iteration, n_iteration)
     else:
-        saved_model_path = MODEL_PATH + "{}/mlp/{}/{}/mlp_{}epochs_{}".format(system, n_iteration, implementation, n_iteration, implementation)
+        if cache != "None":
+            saved_model_path = MODEL_PATH + "{}/mlp/{}/{}/mlp_{}epochs_{}_{}_than_cache".format(system, n_iteration, implementation, n_iteration, implementation, cache)
+        else: 
+            saved_model_path = MODEL_PATH + "{}/mlp/{}/{}/mlp_{}epochs_{}".format(system, n_iteration, implementation, n_iteration, implementation)
     torch.save(mlp_model.state_dict(), saved_model_path)
    
     # Ploting prediction dispersion for 5% of the train set
@@ -110,7 +124,7 @@ def run_mlp(activation_function,
             os.makedirs(MODEL_PATH + "{}/mlp/{}/{}".format(system, n_iteration, implementation))
         name = "mlp_{}epochs_validation".format(n_iteration)
         path = MODEL_PATH + "{}/mlp/{}/{}".format(system, n_iteration, implementation)
-    plot_prediction_dispersion_mlp(mlp_model, dataset, validation_loader, name, path, implementation)
+    plot_prediction_dispersion_mlp(mlp_model, dataset, validation_loader, name, path, implementation, cache)
     
     #Ploting loss history
     idx_test_counter = (len(tbl_train_counter)-1)//n_iteration
@@ -298,7 +312,8 @@ def plot_prediction_dispersion_mlp(model:torch.nn.Module,
                                    loader: DataLoader,
                                    name:str, 
                                    path:str,
-                                   implementation : str):
+                                   implementation : str,
+                                   cache):
     
     
     predictions = []
@@ -324,36 +339,48 @@ def plot_prediction_dispersion_mlp(model:torch.nn.Module,
 
     # Ploting gflops scattering
     sns.regplot(x=gflops_predictions, y=gflops_expectations, scatter=False, fit_reg=True, color="blue")
-    if implementation == "None":
+    if implementation != "None":
         sns.scatterplot(x=gflops_predictions, y=gflops_expectations)
     else:
-        implementations = dataset.dataframe["implementation"].unique()
+        implementations = get_implementations_list(loader, dataset)
         sns.scatterplot(x=gflops_predictions, y=gflops_expectations, hue=implementations)
     plot = sns.lineplot(x=identity_gflops, y=identity_gflops, color="red")
     plt.xlabel("Predictions")
     plt.ylabel("Expectations")
     plt.title("gflops_scattering")
     if implementation == "None":
-        plot.get_figure().savefig("{}/gflops_scattering_{}.png".format(path, name))
+        if cache != "None":
+            plot.get_figure().savefig("{}/gflops_scattering_{}_{}_than_cache.png".format(path, name, cache))
+        else:
+            plot.get_figure().savefig("{}/gflops_scattering_{}.png".format(path, name))
     else:
-        plot.get_figure().savefig("{}/gflops_scattering_{}_{}.png".format(path, name, implementation))
+        if cache != "None":
+            plot.get_figure().savefig("{}/gflops_scattering_{}_{}_{}_than_cache.png".format(path, name, implementation, cache))
+        else:
+            plot.get_figure().savefig("{}/gflops_scattering_{}_{}.png".format(path, name, implementation))
     plt.clf()
 
     # Ploting energy efficiency scattering
     sns.regplot(x=energy_efficiency_predictions, y=energy_efficiency_expectations, scatter=False, fit_reg=True, color="blue")
-    if implementation == "None":
+    if implementation != "None":
         sns.scatterplot(x=energy_efficiency_predictions, y=energy_efficiency_expectations)
     else:
-        implementations = dataset.dataframe["implementation"].unique()
+        implementations = get_implementations_list(loader, dataset)
         sns.scatterplot(x=energy_efficiency_predictions, y=energy_efficiency_expectations, hue=implementations)
     plot = sns.lineplot(x=identity_energy_efficiency, y=identity_energy_efficiency, color="red")
     plt.xlabel("Predictions")
     plt.ylabel("Expectations")
     plt.title("energy_efficieny_scattering")
     if implementation == "None":
-        plot.get_figure().savefig("{}/energy_efficiency_scattering_{}.png".format(path, name))
+        if cache != "None":
+            plot.get_figure().savefig("{}/energy_efficiency_scattering_{}_{}_than_cache.png".format(path, name, cache))
+        else:
+            plot.get_figure().savefig("{}/energy_efficiency_scattering_{}.png".format(path, name))
     else:
-        plot.get_figure().savefig("{}/energy_efficiency_scattering_{}_{}.png".format(path, name, implementation))
+        if cache != "None":
+            plot.get_figure().savefig("{}/energy_efficiency_scattering_{}_{}_{}_than_cache.png".format(path, name, implementation, cache))
+        else:
+            plot.get_figure().savefig("{}/energy_efficiency_scattering_{}_{}.png".format(path, name, implementation))
     plt.clf()
 
 def average_loss_mlp(model:torch.nn.Module, validation_loader:DataLoader, validation_dataset:db.SparseMatrixDataset, out_feature:int):

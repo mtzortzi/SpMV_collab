@@ -16,7 +16,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--model', metavar='MODEL', required=True, help='Model name to run')
     parser.add_argument('-s', '--system', metavar='SYSTEM', required=True, help='CPU/GPU name')
-    parser.add_argument('-i', '--implementation', metavar='IMPLEMENTATION', required=True, help='Implementation of the matrix')
+    parser.add_argument('-i', '--implementation', metavar='IMPLEMENTATION', required=True, help='Implementation of the matrix, None if you want to use all implementations')
+    parser.add_argument('-c', '--cache-split', action='store_true', help='Tell if we want to use dataset seperated based on cache size')
     parser.add_argument('-l', '--load', action='store_true', help='Load the model described from it\'s hyperparameters in it\'s corresponfing global.py file and the -m parameter described above')
 
 
@@ -27,16 +28,19 @@ if __name__ == "__main__":
     system_used = ""
     implementation = ""
     load_model = False
+    cache_split = False
     
     for arg, value in args_data.items():
         if arg == "model":
             model_used = value
-        if arg == "system":
+        elif arg == "system":
             system_used = value
-        if arg == "load" and value:
+        elif arg == "load" and value:
             load_model = True
-        if arg == "implementation":
+        elif arg == "implementation":
             implementation = value
+        elif arg == "cache_split" and value:
+            cache_split = True
     
 
     assert model_used in g.models
@@ -46,6 +50,11 @@ if __name__ == "__main__":
             assert implementation in g.IMPLEMENTATIONS_AMD_EPYC_24
         elif model_used == "Tesla-A100":
             assert implementation in g.IMPLEMENTATIONS_TESLA_A100
+    
+    if cache_split:
+        assert system_used == "AMD-EPYC-24"
+        assert implementation != "None"
+        assert implementation in g.IMPLEMENTATIONS_AMD_EPYC_24
 
     if load_model :
         if model_used == "mlp":
@@ -82,30 +91,71 @@ if __name__ == "__main__":
             path = g.MODEL_PATH + "{}/svr".format(system_used)
             runners.plot_prediction_dispersion_mlp(model_gflops, validation_dataset, validation_loader, graph_name_gflops, path)
             
+    elif cache_split:
+        if model_used == "mlp":
+            # TODO : take into account implementation can be None
+            print("running mlp with {} system with {} implementation with cache split".format(system_used, implementation))
 
+
+            # Running mlp for larger than cache
+            csv_path_larger_than_cache = g.DATA_PATH + "all_format/all_format_{}_{}_larger_than_cache.csv".format(system_used, implementation)
+            csv_path_validation_larger_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_{}_larger_than_cache.csv".format(system_used, implementation)
+            path = g.MODEL_PATH + "{}/mlp/{}/{}".format(system_used, MLP_globals.nb_epochs, implementation)
+            validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_larger_than_cache, True)
+            validation_loader_larger_than_cache = DataLoader(validation_dataset_larger_than_cache, batch_size=1, shuffle=True)
+
+            mlp_model_larger_than_cache = runners.run_mlp(MLP_globals.activation_fn,
+                                                          MLP_globals.nb_hidden_layers,
+                                                          MLP_globals.in_dimension - 1,
+                                                          MLP_globals.out_dimension,
+                                                          MLP_globals.hidden_size,
+                                                          csv_path_larger_than_cache,
+                                                          system_used,
+                                                          implementation,
+                                                          "larger")
+            name_larger_than_cache = "tmlp_{}epochs_real_data".format(MLP_globals.nb_epochs)
+            runners.plot_prediction_dispersion_mlp(mlp_model_larger_than_cache, 
+                                                   validation_dataset_larger_than_cache, 
+                                                   validation_loader_larger_than_cache,
+                                                   name_larger_than_cache,
+                                                   path,
+                                                   implementation,
+                                                   "larger")
+            # Running mlp for smaller than cache
+            
     elif model_used == "mlp":
         if implementation == "None":
-            csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
-            csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
+            
+            csv_path = g.DATA_PATH + "all_format/all_format_{}.csv".format(system_used)
+            csv_path_validation = g.DATA_PATH + "validation/all_format/all_format_{}.csv".format(system_used)
             path = g.MODEL_PATH + "{}/mlp/{}".format(system_used, MLP_globals.nb_epochs)
+            validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)    
         else :
-            csv_path = g.DATA_PATH + "/all_format/all_format_{}_{}.csv".format(system_used, implementation)
-            csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)
+            print("running mlp with {} system with {} implementation".format(system_used, implementation))
+            csv_path = g.DATA_PATH + "all_format/all_format_{}_{}.csv".format(system_used, implementation)
+            csv_path_validation = g.DATA_PATH + "validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)
             path = g.MODEL_PATH + "{}/mlp/{}/{}".format(system_used, MLP_globals.nb_epochs, implementation)
+            validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+
         
-        validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)    
+            
         validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
 
 
         # Running model
+        in_dimension_fix = 0
+        if implementation != "None":
+            in_dimension_fix = 1
+        
         mlp_model = runners.run_mlp(MLP_globals.activation_fn,
                         MLP_globals.nb_hidden_layers,
-                        MLP_globals.in_dimension,
+                        MLP_globals.in_dimension - in_dimension_fix,
                         MLP_globals.out_dimension,
                         MLP_globals.hidden_size,
                         csv_path,
                         system_used,
-                        implementation)
+                        implementation,
+                        "None")
         
         # Plotting predictions
         name = "mlp_{}epochs_real_data".format(MLP_globals.nb_epochs)

@@ -84,7 +84,8 @@ def fit(tbl_test_losses : list,
         optimizer, 
         loss_fn, 
         system : str,
-        implementation : str):
+        implementation : str,
+        cache : str):
     
     test_losses = test(model, test_loader, loss_fn)
     tbl_test_losses.append(test_losses)
@@ -112,9 +113,10 @@ def fit(tbl_test_losses : list,
                 path = MODEL_PATH + "{}/mlp/{}/{}".format(system, epoch, implementation)
                 saved_model_path = MODEL_PATH + "{}/mlp/{}/{}/mlp_{}epochs_{}".format(system, epoch, implementation, epoch, implementation)
             
-            name_prediction = "mlp_{}_epochs_prediciton".format(epoch)
+            
+            name_prediction = "mlp_{}epochs_prediciton".format(epoch)
             prediction_loader = DataLoader(prediction_dataset, batch_size=1, shuffle=True)
-            runners.plot_prediction_dispersion_mlp(model, prediction_dataset, prediction_loader, name_prediction, path, implementation)
+            runners.plot_prediction_dispersion_mlp(model, prediction_dataset, prediction_loader, name_prediction, path, implementation, cache)
             torch.save(model.state_dict(), saved_model_path)
     
     s = getShape(tbl_train_counter)
