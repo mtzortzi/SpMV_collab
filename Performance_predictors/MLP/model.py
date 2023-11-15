@@ -100,12 +100,19 @@ def fit(tbl_test_losses : list,
 
         #Validation
         if epoch%10 == 0:
-            if not(os.path.exists(MODEL_PATH + "{}/mlp/{}/{}".format(system, epoch, implementation))):
-                os.makedirs(MODEL_PATH + "{}/mlp/{}/{}".format(system, epoch, implementation))
-            name_prediction = "mlp_{}_epochs_prediction".format(epoch)
-            path = MODEL_PATH + "{}/mlp/{}/{}".format(system, epoch, implementation)
-            saved_model_path = MODEL_PATH + "{}/mlp/{}/{}/mlp_{}epochs_{}".format(system, epoch, implementation, epoch, implementation)
-
+            
+            if implementation == "None":
+                if not(os.path.exists(MODEL_PATH + "{}/mlp/{}".format(system, epoch))):
+                    os.makedirs(MODEL_PATH + "{}/mlp/{}".format(system, epoch))
+                path = MODEL_PATH + "{}/mlp/{}".format(system, epoch)
+                saved_model_path = MODEL_PATH + "{}/mlp/{}/mlp_{}epochs".format(system, epoch, epoch)
+            else:
+                if not(os.path.exists(MODEL_PATH + "{}/mlp/{}/{}".format(system, epoch, implementation))):
+                    os.makedirs(MODEL_PATH + "{}/mlp/{}/{}".format(system, epoch, implementation))
+                path = MODEL_PATH + "{}/mlp/{}/{}".format(system, epoch, implementation)
+                saved_model_path = MODEL_PATH + "{}/mlp/{}/{}/mlp_{}epochs_{}".format(system, epoch, implementation, epoch, implementation)
+            
+            name_prediction = "mlp_{}_epochs_prediciton".format(epoch)
             prediction_loader = DataLoader(prediction_dataset, batch_size=1, shuffle=True)
             runners.plot_prediction_dispersion_mlp(model, prediction_dataset, prediction_loader, name_prediction, path, implementation)
             torch.save(model.state_dict(), saved_model_path)

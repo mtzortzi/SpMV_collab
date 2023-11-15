@@ -41,10 +41,11 @@ if __name__ == "__main__":
 
     assert model_used in g.models
     assert system_used in g.hardware
-    if model_used == "AMD-EPYC-24":
-        assert implementation in g.IMPLEMENTATIONS_AMD_EPYC_24
-    elif model_used == "Tesla-A100":
-        assert implementation in g.IMPLEMENTATIONS_TESLA_A100
+    if implementation != "None":
+        if model_used == "AMD-EPYC-24":
+            assert implementation in g.IMPLEMENTATIONS_AMD_EPYC_24
+        elif model_used == "Tesla-A100":
+            assert implementation in g.IMPLEMENTATIONS_TESLA_A100
 
     if load_model :
         if model_used == "mlp":
@@ -83,11 +84,18 @@ if __name__ == "__main__":
             
 
     elif model_used == "mlp":
-        csv_path = g.DATA_PATH + "/all_format/all_format_{}_{}.csv".format(system_used, implementation)
-        csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)
-        validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
+        if implementation == "None":
+            csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
+            csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
+            path = g.MODEL_PATH + "{}/mlp/{}".format(system_used, MLP_globals.nb_epochs)
+        else :
+            csv_path = g.DATA_PATH + "/all_format/all_format_{}_{}.csv".format(system_used, implementation)
+            csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)
+            path = g.MODEL_PATH + "{}/mlp/{}/{}".format(system_used, MLP_globals.nb_epochs, implementation)
+        
+        validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)    
         validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
-        path = g.MODEL_PATH + "{}/mlp/{}/{}".format(system_used, MLP_globals.nb_epochs, implementation)
+
 
         # Running model
         mlp_model = runners.run_mlp(MLP_globals.activation_fn,
