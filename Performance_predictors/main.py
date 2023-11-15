@@ -96,11 +96,10 @@ if __name__ == "__main__":
             # TODO : take into account implementation can be None
             print("running mlp with {} system with {} implementation with cache split".format(system_used, implementation))
 
-
+            path = g.MODEL_PATH + "{}/mlp/{}/{}".format(system_used, MLP_globals.nb_epochs, implementation)
             # Running mlp for larger than cache
             csv_path_larger_than_cache = g.DATA_PATH + "all_format/all_format_{}_{}_larger_than_cache.csv".format(system_used, implementation)
             csv_path_validation_larger_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_{}_larger_than_cache.csv".format(system_used, implementation)
-            path = g.MODEL_PATH + "{}/mlp/{}/{}".format(system_used, MLP_globals.nb_epochs, implementation)
             validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_larger_than_cache, True)
             validation_loader_larger_than_cache = DataLoader(validation_dataset_larger_than_cache, batch_size=1, shuffle=True)
 
@@ -113,7 +112,7 @@ if __name__ == "__main__":
                                                           system_used,
                                                           implementation,
                                                           "larger")
-            name_larger_than_cache = "tmlp_{}epochs_real_data".format(MLP_globals.nb_epochs)
+            name_larger_than_cache = "mlp_{}epochs_real_data".format(MLP_globals.nb_epochs)
             runners.plot_prediction_dispersion_mlp(mlp_model_larger_than_cache, 
                                                    validation_dataset_larger_than_cache, 
                                                    validation_loader_larger_than_cache,
@@ -121,7 +120,31 @@ if __name__ == "__main__":
                                                    path,
                                                    implementation,
                                                    "larger")
+            
+            
             # Running mlp for smaller than cache
+            csv_path_smaller_than_cache = g.DATA_PATH + "all_format/all_format_{}_{}_smaller_than_cache.csv".format(system_used, implementation)
+            csv_path_valiation_smaller_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_{}_smaller_than_cache.csv".format(system_used, implementation)
+            validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_path_valiation_smaller_than_cache, True)
+            validation_loader_smaller_than_cache = DataLoader(validation_dataset_smaller_than_cache, batch_size=1, shuffle=True)
+
+            mlp_model_smaller_than_cache = runners.run_mlp(MLP_globals.activation_fn,
+                                                          MLP_globals.nb_hidden_layers,
+                                                          MLP_globals.in_dimension - 1,
+                                                          MLP_globals.out_dimension,
+                                                          MLP_globals.hidden_size,
+                                                          csv_path_smaller_than_cache,
+                                                          system_used,
+                                                          implementation,
+                                                          "smaller")
+            name_smaller_than_cache = "mlp_{}epochs_real_data".format(MLP_globals.nb_epochs)
+            runners.plot_prediction_dispersion_mlp(mlp_model_smaller_than_cache, 
+                                                   validation_dataset_smaller_than_cache, 
+                                                   validation_loader_smaller_than_cache,
+                                                   name_smaller_than_cache,
+                                                   path,
+                                                   implementation,
+                                                   "smaller")
             
     elif model_used == "mlp":
         if implementation == "None":
