@@ -150,7 +150,7 @@ if __name__ == "__main__":
                 # Running mlp for larger than cache
                 csv_path_larger_than_cache = g.DATA_PATH + "all_format/all_format_{}_larger_than_cache.csv".format(system_used)
                 csv_path_validation_larger_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_larger_than_cache.csv".format(system_used)
-                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_larger_than_cache, True)
+                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_larger_than_cache, False)
                 validation_loader_larger_than_cache = DataLoader(validation_dataset_larger_than_cache, batch_size=1, shuffle=True)
 
                 mlp_model_larger_than_cache = runners.run_mlp(MLP_globals.activation_fn,
@@ -175,7 +175,7 @@ if __name__ == "__main__":
                 # Running mlp for smaller than cache
                 csv_path_smaller_than_cache = g.DATA_PATH + "all_format/all_format_{}_smaller_than_cache.csv".format(system_used)
                 csv_path_valiation_smaller_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_smaller_than_cache.csv".format(system_used)
-                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_path_valiation_smaller_than_cache, True)
+                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_path_valiation_smaller_than_cache, False)
                 validation_loader_smaller_than_cache = DataLoader(validation_dataset_smaller_than_cache, batch_size=1, shuffle=True)
 
                 mlp_model_smaller_than_cache = runners.run_mlp(MLP_globals.activation_fn,

@@ -6,7 +6,7 @@ from sklearn import preprocessing
 
 
 class SparseMatrixDataset(Dataset):
-    def __init__(self, csv_file, using_implementation : bool):
+    def __init__(self, csv_file, using_implementation_split : bool):
         self.features = ["A_mem_footprint", 
             "avg_nz_row", 
             "skew_coeff", 
@@ -31,7 +31,7 @@ class SparseMatrixDataset(Dataset):
         avg_bandwidth_scaled = torch.tensor(self.dataframe[self.features[-1]].to_numpy().reshape(-1, 1), dtype=torch.float32)
         self.x = torch.cat((self.x, avg_bandwidth_scaled), 1)
         
-        if not(using_implementation):
+        if not(using_implementation_split):
             # Adding the implementation feature to the X entry
             implementation_labels = self.dataframe["implementation"].unique().tolist() # Getting all unique labels of implementation
             self.mappings = {k: i for i, k in enumerate(implementation_labels)} # Mapping one-hot-encoded labels
