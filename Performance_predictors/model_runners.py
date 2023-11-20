@@ -76,12 +76,20 @@ def run_mlp(activation_function,
     validation_loader = DataLoader(dataset, sampler=validation_sampler)
     
 
-    if implementation == "None":
-        csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}".format(system)
-        prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
+    if cache != "None" :
+        if implementation == "None":
+            csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}_{}_than_cache.csv".format(system, cache)
+            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
+        else :
+            csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}_{}_{}.csv".format(system, implementation, cache)
+            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
     else:
-        csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}_{}.csv".format(system, implementation)
-        prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+        if implementation == "None":
+            csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}.csv".format(system)
+            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
+        else:
+            csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}_{}.csv".format(system, implementation)
+            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
 
 
     #Fitting the neural network
