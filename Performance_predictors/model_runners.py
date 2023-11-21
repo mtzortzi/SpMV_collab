@@ -29,7 +29,6 @@ def run_mlp(activation_function,
             system,
             implementation,
             cache : str):
-    print("running MLP")
 
     mlp_model = MLP_model.MlpPredictor(activation_function,
                                        nb_hidden_layers,
@@ -38,10 +37,10 @@ def run_mlp(activation_function,
                                        hidden_size)
     
     
-    if implementation == "None":  
-        dataset = dataReader.SparseMatrixDataset(csv_path, False)
-    else :
+    if implementation != "None":  
         dataset = dataReader.SparseMatrixDataset(csv_path, True)
+    else :
+        dataset = dataReader.SparseMatrixDataset(csv_path, False)
     optimizer = torch.optim.SGD(mlp_model.parameters(), lr=MLP_globals.lr)
 
     test_split = 0.2
@@ -79,17 +78,17 @@ def run_mlp(activation_function,
     if cache != "None" :
         if implementation == "None":
             csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}_{}_than_cache.csv".format(system, cache)
-            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
-        else :
-            csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}_{}_{}.csv".format(system, implementation, cache)
             prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+        else :
+            csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}_{}_{}_than_cache.csv".format(system, implementation, cache)
+            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, None)
     else:
         if implementation == "None":
             csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}.csv".format(system)
-            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
+            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
         else:
             csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}_{}.csv".format(system, implementation)
-            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, None)
 
 
     #Fitting the neural network
