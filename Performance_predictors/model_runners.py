@@ -78,17 +78,17 @@ def run_mlp(activation_function,
     if cache != "None" :
         if implementation == "None":
             csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}_{}_than_cache.csv".format(system, cache)
-            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
         else :
             csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}_{}_{}_than_cache.csv".format(system, implementation, cache)
-            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, None)
+            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
     else:
         if implementation == "None":
             csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}.csv".format(system)
-            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
         else:
             csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}_{}.csv".format(system, implementation)
-            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, None)
+            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
 
 
     #Fitting the neural network
