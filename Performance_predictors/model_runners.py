@@ -337,7 +337,7 @@ def load_mlp_model(activation_fn,
                                    in_dimension,
                                    out_dimension,
                                    hidden_size)
-    model_path = MODEL_PATH + "/{}/mlp/{}".format(system, name)
+    model_path = MODEL_PATH + "/{}/mlp/{}/{}".format(system, MLP_globals.nb_epochs, name)
     model.load_state_dict(torch.load(model_path))
     return model
 
@@ -345,7 +345,9 @@ def load_svr_model(name, system) -> SVR_model.SvrPredictor:
     print("loading svr model")
     model_path = MODEL_PATH + "{}/svr/{}".format(system, name)
     model = load(model_path + ".joblib")
-    return model
+    svr_model = SVR_model.SvrPredictor(svr=model)
+
+    return svr_model
 
 def load_tree_model(max_depth, name, system):
     print("loading tree model")

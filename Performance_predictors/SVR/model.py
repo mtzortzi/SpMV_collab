@@ -8,12 +8,19 @@ from sklearn.svm import LinearSVR
 from sklearn.svm import SVR
 
 class SvrPredictor(torch.nn.Module):
-    def __init__(self, kernel, 
-                 C,
-                 epsilon,
-                 gamma):
+    def __init__(self, 
+                 kernel : str = None, 
+                 C : float = None,
+                 epsilon : float = None,
+                 gamma : float = None,
+                 svr : SVR = None):
         super(SvrPredictor, self).__init__()
-        self.usualSVR = SVR(kernel=kernel, gamma=gamma, C=C, epsilon=epsilon, verbose=True)
+        if svr == None and kernel != None and C != None and epsilon != None and gamma != None:
+            self.usualSVR = SVR(kernel=kernel, gamma=gamma, C=C, epsilon=epsilon, verbose=True)
+        elif svr != None and kernel == None and C == None and epsilon == None and gamma == None:
+            self.usualSVR = svr
+        else:
+            print("invalid arguments")
     
     def forward(self, x):
         return self.usualSVR.predict(x)
