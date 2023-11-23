@@ -197,7 +197,7 @@ if __name__ == "__main__":
                                                     "smaller")
         elif model_used == "svr":
             if implementation != "None":
-                print("running svr with {} system without implementation with cache split".format(system_used, implementation))
+                print("running svr with {} system with {} implementation with cache split".format(system_used, implementation))
                 path = g.MODEL_PATH + "{}/svr/{}".format(system_used, implementation)
 
                 # Running svr for larger than cache
