@@ -43,7 +43,7 @@ def split_dataset_per_device_per_implementation(path_prefix, prefix, df):
 # no need to do this for the 'best_format' dataset...
 
 
-def split_CPU_dataset_on_cache_threshold(path_prefix, prefix, df, threshold):
+def split_CPU_dataset_on_cache_threshold(path_prefix, prefix, df, threshold, cutoff_threshold):
     System = list(set(df['System']))[0]
 
     for implementation in list(set(df['implementation'])):
@@ -63,14 +63,23 @@ def split_CPU_dataset_on_cache_threshold(path_prefix, prefix, df, threshold):
         smaller_than_df = impl_df[impl_df['mem_range'].isin(smaller_than)]
         larger_than_df  = impl_df[impl_df['mem_range'].isin(larger_than)]
 
+        # filter out matrices that are on the cache threshold (with the specified cutoff point regarding memory footprint)
+        smaller_than_df = smaller_than_df[smaller_than_df['A_mem_footprint'] <= ((100-cutoff_threshold)/100)*threshold]
+        larger_than_df = larger_than_df[larger_than_df['A_mem_footprint'] >= ((100+cutoff_threshold))/100*threshold]
+
         print(path_prefix + prefix + '/' + prefix + '_' + System + '_' + implementation + '_' + 'smaller_than_cache' + '.csv')
         smaller_than_df.to_csv(path_prefix + prefix + '/' + prefix + '_' + System + '_' + implementation + '_' + 'smaller_than_cache' + '.csv', index=False )
         print(path_prefix + prefix + '/' + prefix + '_' + System + '_' + implementation + '_' + 'larger_than_cache' + '.csv')
         larger_than_df.to_csv(path_prefix + prefix + '/' + prefix + '_' + System + '_' + implementation + '_' + 'larger_than_cache' + '.csv',  index=False )
 
+# this is the percentage of the dataset entries that we want to be excluded from the dataset. 
+# e.g., cutoff the matrices that have memory footprint in the (100-15)=85% and (100+15)=115% of the cache 
+#       threshold for the smaller_than and larger_than dataframes respectively.
+cutoff_threshold = 15
+
 all_format_AMD_EPYC_24_df  = pd.read_csv('./data/' + 'all_format/all_format_AMD-EPYC-24.csv')
-split_CPU_dataset_on_cache_threshold('./data/', 'all_format', all_format_AMD_EPYC_24_df, 128)
+split_CPU_dataset_on_cache_threshold('./data/', 'all_format', all_format_AMD_EPYC_24_df, 128, cutoff_threshold)
 
 # validation dataset
 all_format_AMD_EPYC_24_df  = pd.read_csv('./data/validation/' + 'all_format/all_format_AMD-EPYC-24.csv')
-split_CPU_dataset_on_cache_threshold('./data/validation/', 'all_format', all_format_AMD_EPYC_24_df, 128)
+split_CPU_dataset_on_cache_threshold('./data/validation/', 'all_format', all_format_AMD_EPYC_24_df, 128, cutoff_threshold)
