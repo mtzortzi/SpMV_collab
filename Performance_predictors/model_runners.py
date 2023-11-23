@@ -157,17 +157,41 @@ def predict_mlp(model, input, scaler_gflops:preprocessing.MinMaxScaler, scaler_e
     prediction = torch.cat((gflops_predicted_unscaled, energy_efficiency_predicted_unscaled), 1)
     return prediction
 
-def run_svr(kernel, C, epsilon, gamma, csv_path, system, out_feature):
-    dataset = dataReader.SparseMatrixDataset(csv_path)
+def run_svr(kernel, C, epsilon, gamma, csv_path, system, out_feature, implementation, cache):
+    
+    if implementation == "None":  
+        dataset = dataReader.SparseMatrixDataset(csv_path, False)
+    else :
+        dataset = dataReader.SparseMatrixDataset(csv_path, True)
+    
 
     svr_model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma)
     SVR_model.train_usualSVR(svr_model, dataset, out_feature)
     #Saving the last model
     saved_model_path = ""
-    if out_feature == 0:  
-        saved_model_path = MODEL_PATH + "{}/svr/svr_gflops".format(system)
-    elif out_feature == 1:
-        saved_model_path = MODEL_PATH + "{}/svr/svr_energy_efficiency".format(system)
+    if implementation == "None":
+        if cache != "None":
+            if out_feature == 0:
+                saved_model_path = MODEL_PATH + "{}/svr/svr_gflops_{}_than_cache".format(system, cache)
+            elif out_feature == 1:
+                saved_model_path = MODEL_PATH + "{}/svr/svr_energy_efficiency_{}_than_cache".format(system, cache)
+        else:
+            if out_feature == 0:
+                saved_model_path = MODEL_PATH + "{}/svr/svr_gflops".format(system)
+            elif out_feature == 1:
+                saved_model_path = MODEL_PATH + "{}/svr/svr_energy_efficiency".format(system)
+    else:
+        if cache != "None":
+            if out_feature == 0: 
+                saved_model_path = MODEL_PATH + "{}/svr/{}/svr_gflops_{}_than_cache".format(system, implementation, cache)
+            elif out_feature == 1:
+                saved_model_path = MODEL_PATH + "{}/svr/{}/svr_energy_efficiency_{}_than_cache".format(system, implementation, cache)
+        else:
+            if out_feature == 0:
+                saved_model_path = MODEL_PATH + "{}/svr/{}/svr_gflops".format(system, implementation)
+            elif out_feature == 1:
+                saved_model_path = MODEL_PATH + "{}/svr/{}/svr_energy_efficiency".format(system, implementation)
+
     
     dump(svr_model.usualSVR, saved_model_path + ".joblib")
 
@@ -181,17 +205,28 @@ def run_svr(kernel, C, epsilon, gamma, csv_path, system, out_feature):
     validation_sampler = SubsetRandomSampler(validation_indices)
     validation_loader = DataLoader(dataset, sampler=validation_sampler)
 
-    if not(os.path.exists(MODEL_PATH + "{}/svr".format(system))):
-        os.makedirs(MODEL_PATH + "{}/svr".format(system))
-    
     name = ""
-    if out_feature == 0:
-        name = "svr_gflops_validation"
-    elif out_feature == 1:
-        name = "svr_energy_efficiency_validation"
-    
-    path = MODEL_PATH + "{}/svr".format(system)
-    plot_prediction_dispersion_sklearn(svr_model, dataset, validation_loader, name, path, out_feature, "svr")
+    path = ""
+    if implementation == "None":
+        if not(os.path.exists(MODEL_PATH + "{}/svr".format(system))):
+            os.makedirs(MODEL_PATH + "{}/svr".format(system))
+        
+        if out_feature == 0:
+            name = "svr_gflops_validation"
+        elif out_feature == 1:
+            name = "svr_energy_efficiency_validation"
+        path = MODEL_PATH + "{}/svr".format(system)
+    else:
+        if not(os.path.exists(MODEL_PATH + "{}/svr/{}".format(system, implementation))):
+            os.makedirs(MODEL_PATH + "{}/svr/{}".format(system, implementation))
+        
+        if out_feature == 0:
+            name = "svr_gflops_validation"
+        elif out_feature == 1:
+            name = "svr_energy_efficiency_validation"
+        path = MODEL_PATH + "{}/svr/{}".format(system, implementation)
+
+    plot_prediction_dispersion_sklearn(svr_model, dataset, validation_loader, name, path, out_feature, "svr", implementation, cache)
     return svr_model 
 
 def run_tree(max_depth, csv_path, system, out_feature):
@@ -264,7 +299,9 @@ def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
                                    name:str,
                                    path:str,
                                    out_feature:int,
-                                   model_name:str):
+                                   model_name:str,
+                                   implementation,
+                                   cache):
     
     assert model_name in models
     predictions = []
@@ -285,14 +322,18 @@ def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
         expectations.append(expectation.numpy().tolist()[0][0])
     
     plt.clf()
-    implementations = get_implementations_list(loader, dataset)
+    if implementation != "None":
+        sns.scatterplot(x=predictions, y=expectations)
+    else:
+        implementations = get_implementations_list(loader, dataset)
+        sns.scatterplot(x=predictions, y=expectations, hue=implementations)
+    
     if out_feature == 0:
         identity = np.arange(min(expectations), max(expectations))
     elif out_feature == 1:
         identity = np.arange(min(expectations), max(expectations), 0.1)
-    
     sns.regplot(x=predictions, y=expectations, scatter=False, fit_reg=True, color="Blue")
-    sns.scatterplot(x=predictions, y=expectations, hue=implementations)
+    
     
     plot = sns.lineplot(x=identity, y=identity, color="Red")
     plt.xlabel("Predictions")
@@ -305,14 +346,28 @@ def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
         plot_title = "energy_effiency_scattering"
     
     plt.title(plot_title)
-    plot.get_figure().savefig("{}/scaterring_{}.png".format(path, name))
+
+    if implementation == "None":
+        if cache != "None":
+            plot.get_figure().savefig("{}/scattering_{}_{}_than_cache.png".format(path, name, cache))
+        else:
+            plot.get_figure().savefig("{}/scaterring_{}.png".format(path, name))
+    else:
+        if cache != "None":
+            plot.get_figure().savefig("{}/scattering_{}_{}_{}_than_cache.png".format(path, name, implementation, cache))
+        else:
+            plot.get_figure().savefig("{}/scattering_{}_{}.png".format(path, name, implementation))
+    
     
     if model_name == "tree":
         plt.clf()
         features = dataset.features
         features.append("implementation")
         plot_tree(model.tree, filled=True, feature_names=features)
-        plt.savefig("{}/{}.pdf".format(path, name))
+        if implementation == "None":
+            plt.savefig("{}/{}.pdf".format(path, name))
+        else:
+            plt.savefig("{}/{}_{}.pdf".format(path, name, implementation))
 
 def plot_prediction_dispersion_mlp(model:torch.nn.Module, 
                                    dataset:dataReader.SparseMatrixDataset,

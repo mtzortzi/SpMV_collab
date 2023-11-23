@@ -195,11 +195,208 @@ if __name__ == "__main__":
                                                     path,
                                                     implementation,
                                                     "smaller")
+        elif model_used == "svr":
+            if implementation != "None":
+                print("running svr with {} system without implementation with cache split".format(system_used, implementation))
+                path = g.MODEL_PATH + "{}/svr/{}".format(system_used, implementation)
+
+                # Running svr for larger than cache
+                csv_path_larger_than_cache = g.DATA_PATH + "all_format/all_format_{}_{}_larger_than_cache.csv".format(system_used, implementation)
+                csv_path_validation_larger_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_{}_larger_than_cache.csv".format(system_used, implementation)
+                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_larger_than_cache, True)
+                validation_loader_larger_than_cache = DataLoader(validation_dataset_larger_than_cache, batch_size=1, shuffle=True)
+
+                print("Larger than cache gflops")
+                svr_model_larger_than_cache_gflops = runners.run_svr(SVR_globals.kernel,
+                                                              SVR_globals.C,
+                                                              SVR_globals.epsilon,
+                                                              SVR_globals.gamma,
+                                                              csv_path_larger_than_cache,
+                                                              system_used,
+                                                              0,
+                                                              implementation,
+                                                              "larger")
+                name_larger_than_cache = "svr_real_data_larger_than_cache"
+                runners.plot_prediction_dispersion_sklearn(svr_model_larger_than_cache_gflops,
+                                                           validation_dataset_larger_than_cache,
+                                                           validation_loader_larger_than_cache,
+                                                           name_larger_than_cache,
+                                                           path,
+                                                           0,
+                                                           model_used,
+                                                           implementation,
+                                                           "larger")
+                
+                print("Larger than cache energy efficiency")
+                svr_model_larger_than_cache_energy = runners.run_svr(SVR_globals.kernel,
+                                                              SVR_globals.C,
+                                                              SVR_globals.epsilon,
+                                                              SVR_globals.gamma,
+                                                              csv_path_larger_than_cache,
+                                                              system_used,
+                                                              1,
+                                                              implementation,
+                                                              "larger")
+                name_larger_than_cache = "svr_real_data_larger_than_cache"
+                runners.plot_prediction_dispersion_sklearn(svr_model_larger_than_cache_energy,
+                                                           validation_dataset_larger_than_cache,
+                                                           validation_loader_larger_than_cache,
+                                                           name_larger_than_cache,
+                                                           path,
+                                                           1,
+                                                           model_used,
+                                                           implementation,
+                                                           "larger")
+                # Running svr for smaller than cache
+                csv_path_smaller_than_cache = g.DATA_PATH + "all_format/all_format_{}_{}_smaller_than_cache.csv".format(system_used, implementation)
+                csv_path_validation_smaller_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_{}_smaller_than_cache.csv".format(system_used, implementation)
+                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_smaller_than_cache, True)
+                validation_loader_smaller_than_cache = DataLoader(validation_dataset_smaller_than_cache, batch_size=1, shuffle=True)
+
+                print("Smaller than cache gflops")
+                svr_model_smaller_than_cache_gflops = runners.run_svr(SVR_globals.kernel,
+                                                              SVR_globals.C,
+                                                              SVR_globals.epsilon,
+                                                              SVR_globals.gamma,
+                                                              csv_path_smaller_than_cache,
+                                                              system_used,
+                                                              0,
+                                                              implementation,
+                                                              "smaller")
+                name_smaller_than_cache = "svr_real_data_smaller_than_cache"
+                runners.plot_prediction_dispersion_sklearn(svr_model_smaller_than_cache_gflops,
+                                                           validation_dataset_smaller_than_cache,
+                                                           validation_loader_smaller_than_cache,
+                                                           name_smaller_than_cache,
+                                                           path,
+                                                           0,
+                                                           model_used,
+                                                           implementation,
+                                                           "smaller")
+                
+                print("Smaller than cache energy efficiency")
+                svr_model_smaller_than_cache_energy = runners.run_svr(SVR_globals.kernel,
+                                                              SVR_globals.C,
+                                                              SVR_globals.epsilon,
+                                                              SVR_globals.gamma,
+                                                              csv_path_smaller_than_cache,
+                                                              system_used,
+                                                              1,
+                                                              implementation,
+                                                              "smaller")
+                name_smaller_than_cache = "svr_real_data_smaller_than_cache"
+                runners.plot_prediction_dispersion_sklearn(svr_model_smaller_than_cache_energy,
+                                                           validation_dataset_smaller_than_cache,
+                                                           validation_loader_smaller_than_cache,
+                                                           name_smaller_than_cache,
+                                                           path,
+                                                           1,
+                                                           model_used,
+                                                           implementation,
+                                                           "smaller")
+            else:
+                print("Running svr with {} system without implementation with cache split".format(system_used))
+                path = g.MODEL_PATH + "{}/svr/".format(system_used)
+                # Running mlp for larger than cache
+                csv_path_larger_than_cache = g.DATA_PATH + "all_format/all_format_{}_larger_than_cache.csv".format(system_used)
+                csv_path_validation_larger_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_larger_than_cache.csv".format(system_used)
+                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_larger_than_cache, False)
+                validation_loader_larger_than_cache = DataLoader(validation_dataset_larger_than_cache, batch_size=1, shuffle=True)
+
+                print("Larger than cache gflops")
+                svr_model_larger_than_cache_gflops = runners.run_svr(SVR_globals.kernel,
+                                                              SVR_globals.C,
+                                                              SVR_globals.epsilon,
+                                                              SVR_globals.gamma,
+                                                              csv_path_larger_than_cache,
+                                                              system_used,
+                                                              0,
+                                                              implementation,
+                                                              "larger")
+                
+                print("plotting on real data")
+                name_larger_than_cache = "svr_real_data_larger_than_cache"
+                runners.plot_prediction_dispersion_sklearn(svr_model_larger_than_cache_gflops,
+                                                           validation_dataset_larger_than_cache,
+                                                           validation_loader_larger_than_cache,
+                                                           name_larger_than_cache,
+                                                           path,
+                                                           0,
+                                                           model_used,
+                                                           implementation,
+                                                           "larger")
+                
+                print("Larger than cache energy efficiency")
+                svr_model_larger_than_cache_energy = runners.run_svr(SVR_globals.kernel,
+                                                              SVR_globals.C,
+                                                              SVR_globals.epsilon,
+                                                              SVR_globals.gamma,
+                                                              csv_path_larger_than_cache,
+                                                              system_used,
+                                                              1,
+                                                              implementation,
+                                                              "larger")
+                name_larger_than_cache = "svr_real_data_larger_than_cache"
+                runners.plot_prediction_dispersion_sklearn(svr_model_larger_than_cache_energy,
+                                                           validation_dataset_larger_than_cache,
+                                                           validation_loader_larger_than_cache,
+                                                           name_larger_than_cache,
+                                                           path,
+                                                           1,
+                                                           model_used,
+                                                           implementation,
+                                                           "larger")
+                # Running svr for smaller than cache
+                csv_path_smaller_than_cache = g.DATA_PATH + "all_format/all_format_{}_smaller_than_cache.csv".format(system_used)
+                csv_path_validation_smaller_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_smaller_than_cache.csv".format(system_used)
+                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_smaller_than_cache, False)
+                validation_loader_smaller_than_cache = DataLoader(validation_dataset_smaller_than_cache, batch_size=1, shuffle=True)
+
+                print("Smaller than cache gflops")
+                svr_model_smaller_than_cache_gflops = runners.run_svr(SVR_globals.kernel,
+                                                              SVR_globals.C,
+                                                              SVR_globals.epsilon,
+                                                              SVR_globals.gamma,
+                                                              csv_path_smaller_than_cache,
+                                                              system_used,
+                                                              0,
+                                                              implementation,
+                                                              "smaller")
+                name_smaller_than_cache = "svr_real_data_smaller_than_cache"
+                runners.plot_prediction_dispersion_sklearn(svr_model_smaller_than_cache_gflops,
+                                                           validation_dataset_smaller_than_cache,
+                                                           validation_loader_smaller_than_cache,
+                                                           name_smaller_than_cache,
+                                                           path,
+                                                           0,
+                                                           model_used,
+                                                           implementation,
+                                                           "smaller")
+                
+                print("Smaller than cache energy efficiency")
+                svr_model_smaller_than_cache_energy = runners.run_svr(SVR_globals.kernel,
+                                                              SVR_globals.C,
+                                                              SVR_globals.epsilon,
+                                                              SVR_globals.gamma,
+                                                              csv_path_smaller_than_cache,
+                                                              system_used,
+                                                              1,
+                                                              implementation,
+                                                              "smaller")
+                name_smaller_than_cache = "svr_real_data_smaller_than_cache"
+                runners.plot_prediction_dispersion_sklearn(svr_model_smaller_than_cache_energy,
+                                                           validation_dataset_smaller_than_cache,
+                                                           validation_loader_smaller_than_cache,
+                                                           name_smaller_than_cache,
+                                                           path,
+                                                           1,
+                                                           model_used,
+                                                           implementation,
+                                                           "smaller")
 
 
     elif model_used == "mlp":
-        if implementation == "None":
-            
+        if implementation == "None": 
             csv_path = g.DATA_PATH + "all_format/all_format_{}.csv".format(system_used)
             csv_path_validation = g.DATA_PATH + "validation/all_format/all_format_{}.csv".format(system_used)
             path = g.MODEL_PATH + "{}/mlp/{}".format(system_used, MLP_globals.nb_epochs)
@@ -243,12 +440,20 @@ if __name__ == "__main__":
         print("Avg loss of model mlp on energy efficiency : {}%".format(avg_loss_energy_efficiency.detach().tolist()*100))
         
     elif model_used == "svr":
-        print("running Support Vector Regression model")
-        csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
-        csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
-        validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
+        if implementation == "None":
+            print("Running SVR with {} system without implementation".format(system_used))
+            csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
+            csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
+            validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
+            path = g.MODEL_PATH + "{}/svr".format(system_used)
+        else:
+            print("Running SVR with {} system with {} implementation".format(system_used, implementation))
+            csv_path = g.DATA_PATH + "/all_format/all_format_{}_{}.csv".format(system_used, implementation)
+            csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)
+            validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+            path = g.MODEL_PATH + "{}/svr/{}".format(system_used, implementation)
+            
         validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
-        path = g.MODEL_PATH + "{}/svr".format(system_used)
         
         print("Running svr on gflops predictions")
         # Running model
@@ -258,14 +463,17 @@ if __name__ == "__main__":
                         SVR_globals.gamma,
                         csv_path,
                         system_used,
-                        0)
+                        0,
+                        implementation,
+                        "None")
         # Plotting predictions
         name_gflops = "svr_gflops"
-        runners.plot_prediction_dispersion_sklearn(model_gflops, validation_dataset, validation_loader, name_gflops, path, 0, model_used)
+        runners.plot_prediction_dispersion_sklearn(model_gflops, validation_dataset, validation_loader, name_gflops, path, 0, model_used, implementation, "None")
 
         # Computing average loss on validation dataset
         avg_loss : torch.Tensor = runners.average_loss_sklearn(model_gflops, validation_dataset, 0)
         print("Avg loss of svr model on gflops : {}%".format(avg_loss.tolist()*100))
+
 
         print("Running svr on energy efficiency predictions")
         # Running model
@@ -275,11 +483,21 @@ if __name__ == "__main__":
                         SVR_globals.gamma,
                         csv_path,
                         system_used,
-                        1)
+                        1,
+                        implementation,
+                        "None")
         
         # Plotting predictions
         name_energy_efficiency = "svr_energy_efficiency"
-        runners.plot_prediction_dispersion_sklearn(model_energy_efficiency, validation_dataset, validation_loader, name_energy_efficiency, path, 1, model_used)
+        runners.plot_prediction_dispersion_sklearn(model_energy_efficiency, 
+                                                   validation_dataset, 
+                                                   validation_loader, 
+                                                   name_energy_efficiency, 
+                                                   path, 
+                                                   1,
+                                                   model_used, 
+                                                   implementation,
+                                                   "None")
 
         # Computing average loss on validation dataset
         avg_loss : torch.Tensor = runners.average_loss_sklearn(model_energy_efficiency, validation_dataset, 1)
@@ -299,7 +517,7 @@ if __name__ == "__main__":
         name_gflops = "tree_gflops"
 
         # Plotting predictions
-        runners.plot_prediction_dispersion_sklearn(tree_gflops, validation_dataset, validation_loader, name_gflops, path, 0, model_used)
+        runners.plot_prediction_dispersion_sklearn(tree_gflops, validation_dataset, validation_loader, name_gflops, path, 0, model_used, "None")
 
         # Computing average loss on validation dataset
         avg_loss : torch.Tensor = runners.average_loss_sklearn(tree_gflops, validation_dataset, 0)
@@ -312,7 +530,7 @@ if __name__ == "__main__":
         name_energy_efficiency = "tree_energy_efficiency"
 
         # Plotting predictions
-        runners.plot_prediction_dispersion_sklearn(tree_energy_efficiency, validation_dataset, validation_loader, name_energy_efficiency, path, 1, model_used)
+        runners.plot_prediction_dispersion_sklearn(tree_energy_efficiency, validation_dataset, validation_loader, name_energy_efficiency, path, 1, model_used, "None")
 
         # Computing average loss on validation dataset
         avg_loss : torch.Tensor = runners.average_loss_sklearn(tree_energy_efficiency, validation_dataset, 1)
