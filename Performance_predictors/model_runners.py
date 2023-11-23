@@ -229,15 +229,62 @@ def run_svr(kernel, C, epsilon, gamma, csv_path, system, out_feature, implementa
     plot_prediction_dispersion_sklearn(svr_model, dataset, validation_loader, name, path, out_feature, "svr", implementation, cache)
     return svr_model 
 
-def run_tree(max_depth, csv_path, system, out_feature):
-    dataset = dataReader.SparseMatrixDataset(csv_path)
+def run_tree(max_depth, csv_path, system, out_feature, implementation, cache):
+    if implementation == "None":
+        dataset = dataReader.SparseMatrixDataset(csv_path, False)
+    else:
+        dataset = dataReader.SparseMatrixDataset(csv_path, True)
+
+
     tree_model : torch.nn.Module = Tree_model.TreePredictor(max_depth)
     Tree_model.train_TreePredictor(tree_model, dataset)
-    if out_feature == 0:  
-        saved_model_path = MODEL_PATH + "{}/tree/tree_gflops".format(system)
-    elif out_feature == 1:
-        saved_model_path = MODEL_PATH + "{}/tree/tree_energy_efficiency".format(system)
-    torch.save(tree_model.state_dict(), saved_model_path)
+
+    name = ""
+    path = ""
+    if implementation == "None":
+        if not(os.path.exists(MODEL_PATH + "{}/tree".format(system))):
+            os.makedirs(MODEL_PATH + "{}/tree".format(system))
+        
+        if out_feature == 0:
+            name = "tree_gflops_validation"
+        elif out_feature == 1:
+            name = "tree_energy_efficiency_validation"
+        path = MODEL_PATH + "{}/tree".format(system)
+    else:
+        if not(os.path.exists(MODEL_PATH + "{}/tree/{}".format(system, implementation))):
+            os.makedirs(MODEL_PATH + "{}/tree/{}".format(system, implementation))
+        
+        if out_feature == 0:
+            name = "tree_gflops_validation"
+        elif out_feature == 1:
+            name = "tree_energy_efficiency_validation"
+        path = MODEL_PATH + "{}/tree/{}".format(system, implementation)
+
+    saved_model_path = ""
+    if implementation == "None":
+        if cache != "None":
+            if out_feature == 0:
+                saved_model_path = MODEL_PATH + "{}/tree/tree_gflops_{}_than_cache".format(system, cache)
+            elif out_feature == 1:
+                saved_model_path = MODEL_PATH + "{}/tree/tree_energy_efficiency_{}_than_cache".format(system, cache)
+        else:
+            if out_feature == 0:
+                saved_model_path = MODEL_PATH + "{}/svr/svr_gflops".format(system)
+            elif out_feature == 1:
+                saved_model_path = MODEL_PATH + "{}/svr/svr_energy_efficiency".format(system)
+    else:
+        if cache != "None":
+            if out_feature == 0:
+                saved_model_path = MODEL_PATH + "{}/tree/{}/tree_gflops_{}_than_cache".format(system, implementation, cache)
+            elif out_feature == 1:
+                saved_model_path = MODEL_PATH + "{}/tree/{}/tree_energy_efficiency_{}_than_cache".format(system, implementation, cache)
+        else:
+            if out_feature == 0:
+                saved_model_path = MODEL_PATH + "{}/tree/{}/tree_gflops".format(system, implementation)
+            elif out_feature == 1:
+                saved_model_path = MODEL_PATH + "{}/tree/{}/tree_energy_efficiency".format(system, implementation)
+
+    dump(tree_model.tree, saved_model_path + ".joblib")
 
     # Ploting prediction dispersion for 5% of the train set
     dataset_indices = list(range(len(dataset)))
@@ -252,14 +299,9 @@ def run_tree(max_depth, csv_path, system, out_feature):
     if not(os.path.exists(MODEL_PATH + "{}/tree".format(system))):
         os.makedirs(MODEL_PATH + "{}/tree".format(system))
     
-    name = ""
-    if out_feature == 0:
-        name = "tree_gflops_validation"
-    elif out_feature == 1:
-        name = "tree_energy_efficiency_validation"
     
-    path = MODEL_PATH + "{}/tree".format(system)
-    plot_prediction_dispersion_sklearn(tree_model, dataset, validation_loader, name, path, out_feature, "tree")
+    
+    plot_prediction_dispersion_sklearn(tree_model, dataset, validation_loader, name, path, out_feature, "tree", implementation, cache)
 
     return tree_model
 

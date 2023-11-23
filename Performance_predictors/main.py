@@ -393,7 +393,180 @@ if __name__ == "__main__":
                                                            model_used,
                                                            implementation,
                                                            "smaller")
+        elif model_used == "tree":
+            if implementation != "None":
+                print("running tree with {} system without implementation with cache split".format(system_used, implementation))
+                path = g.MODEL_PATH + "{}/tree/{}".format(system_used, implementation)
 
+                # Running tree for larger than cache
+                csv_path_larger_than_cache = g.DATA_PATH + "all_format/all_format_{}_{}_larger_than_cache.csv".format(system_used, implementation)
+                csv_path_validation_larger_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_{}_larger_than_cache.csv".format(system_used, implementation)
+                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_larger_than_cache, True)
+                validation_loader_larger_than_cache = DataLoader(validation_dataset_larger_than_cache, batch_size=1, shuffle=True)
+
+                print("Larger than cache gflops")
+                tree_model_larger_than_cache_gflops = runners.run_tree(Tree_globals.max_depth,
+                                                                       csv_path_larger_than_cache,
+                                                                       system_used,
+                                                                       0,
+                                                                       implementation,
+                                                                       "larger",)
+                name_larger_than_cache = "tree_real_data_larger_than_cache"
+                runners.plot_prediction_dispersion_sklearn(tree_model_larger_than_cache_gflops,
+                                                           validation_dataset_larger_than_cache,
+                                                           validation_loader_larger_than_cache,
+                                                           name_larger_than_cache,
+                                                           path,
+                                                           0,
+                                                           model_used,
+                                                           implementation,
+                                                           "larger")
+                
+                print("Larger than cache energy efficiency")
+                tree_model_larger_than_cache_energy = runners.run_tree(Tree_globals.max_depth,
+                                                                       csv_path_larger_than_cache,
+                                                                       system_used,
+                                                                       1,
+                                                                       implementation,
+                                                                       "larger")
+                name_larger_than_cache = "tree_real_data_larger_than_cache"
+                runners.plot_prediction_dispersion_sklearn(tree_model_larger_than_cache_energy,
+                                                           validation_dataset_larger_than_cache,
+                                                           validation_loader_larger_than_cache,
+                                                           name_larger_than_cache,
+                                                           path,
+                                                           1,
+                                                           model_used,
+                                                           implementation,
+                                                           "larger")
+                # Running tree for smaller than cache
+                csv_path_smaller_than_cache = g.DATA_PATH + "all_format/all_format_{}_{}_smaller_than_cache.csv".format(system_used, implementation)
+                csv_path_validation_smaller_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_{}_smaller_than_cache.csv".format(system_used, implementation)
+                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_smaller_than_cache, True)
+                validation_loader_smaller_than_cache = DataLoader(validation_dataset_smaller_than_cache, batch_size=1, shuffle=True)
+
+                print("Smaller than cache gflops")
+                tree_model_smaller_than_cache_gflops = runners.run_tree(Tree_globals.max_depth,
+                                                                        csv_path_larger_than_cache,
+                                                                        system_used,
+                                                                        0,
+                                                                        implementation,
+                                                                        "smaller")
+                name_smaller_than_cache = "tree_real_data_smaller_than_cache"
+                runners.plot_prediction_dispersion_sklearn(tree_model_smaller_than_cache_gflops,
+                                                           validation_dataset_smaller_than_cache,
+                                                           validation_loader_smaller_than_cache,
+                                                           name_smaller_than_cache,
+                                                           path,
+                                                           0,
+                                                           model_used,
+                                                           implementation,
+                                                           "smaller")
+                
+                print("Smaller than cache energy efficiency")
+                tree_model_smaller_than_cache_energy = runners.run_tree(Tree_globals.max_depth,
+                                                                        csv_path_larger_than_cache,
+                                                                        system_used,
+                                                                        1,
+                                                                        implementation,
+                                                                        "smaller")
+                name_smaller_than_cache = "tree_real_data_smaller_than_cache"
+                runners.plot_prediction_dispersion_sklearn(tree_model_smaller_than_cache_energy,
+                                                           validation_dataset_smaller_than_cache,
+                                                           validation_loader_smaller_than_cache,
+                                                           name_smaller_than_cache,
+                                                           path,
+                                                           1,
+                                                           model_used,
+                                                           implementation,
+                                                           "smaller")
+            else:
+                print("Running tree with {} system without implementation with cache split".format(system_used))
+                path = g.MODEL_PATH + "{}/tree/".format(system_used)
+                # Running mlp for larger than cache
+                csv_path_larger_than_cache = g.DATA_PATH + "all_format/all_format_{}_larger_than_cache.csv".format(system_used)
+                csv_path_validation_larger_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_larger_than_cache.csv".format(system_used)
+                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_larger_than_cache, False)
+                validation_loader_larger_than_cache = DataLoader(validation_dataset_larger_than_cache, batch_size=1, shuffle=True)
+
+                print("Larger than cache gflops")
+                tree_model_larger_than_cache_gflops = runners.run_tree(Tree_globals.max_depth,
+                                                                       csv_path_larger_than_cache,
+                                                                       system_used,
+                                                                       0,
+                                                                       implementation,
+                                                                       "larger")
+                
+                print("plotting on real data")
+                name_larger_than_cache = "tree_real_data_larger_than_cache"
+                runners.plot_prediction_dispersion_sklearn(tree_model_larger_than_cache_gflops,
+                                                           validation_dataset_larger_than_cache,
+                                                           validation_loader_larger_than_cache,
+                                                           name_larger_than_cache,
+                                                           path,
+                                                           0,
+                                                           model_used,
+                                                           implementation,
+                                                           "larger")
+                
+                print("Larger than cache energy efficiency")
+                tree_model_larger_than_cache_energy = runners.run_tree(Tree_globals.max_depth,
+                                                                       csv_path_larger_than_cache,
+                                                                       system_used,
+                                                                       1,
+                                                                       implementation,
+                                                                       "larger")
+                name_larger_than_cache = "tree_real_data_larger_than_cache"
+                runners.plot_prediction_dispersion_sklearn(tree_model_larger_than_cache_energy,
+                                                           validation_dataset_larger_than_cache,
+                                                           validation_loader_larger_than_cache,
+                                                           name_larger_than_cache,
+                                                           path,
+                                                           1,
+                                                           model_used,
+                                                           implementation,
+                                                           "larger")
+                # Running tree for smaller than cache
+                csv_path_smaller_than_cache = g.DATA_PATH + "all_format/all_format_{}_smaller_than_cache.csv".format(system_used)
+                csv_path_validation_smaller_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_smaller_than_cache.csv".format(system_used)
+                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_smaller_than_cache, False)
+                validation_loader_smaller_than_cache = DataLoader(validation_dataset_smaller_than_cache, batch_size=1, shuffle=True)
+
+                print("Smaller than cache gflops")
+                tree_model_smaller_than_cache_gflops = runners.run_tree(Tree_globals.max_depth,
+                                                                        csv_path_larger_than_cache,
+                                                                        system_used,
+                                                                        0,
+                                                                        implementation,
+                                                                        "smaller")
+                name_smaller_than_cache = "tree_real_data_smaller_than_cache"
+                runners.plot_prediction_dispersion_sklearn(tree_model_smaller_than_cache_gflops,
+                                                           validation_dataset_smaller_than_cache,
+                                                           validation_loader_smaller_than_cache,
+                                                           name_smaller_than_cache,
+                                                           path,
+                                                           0,
+                                                           model_used,
+                                                           implementation,
+                                                           "smaller")
+                
+                print("Smaller than cache energy efficiency")
+                tree_model_smaller_than_cache_energy = runners.run_tree(Tree_globals.max_depth,
+                                                                        csv_path_larger_than_cache,
+                                                                        system_used,
+                                                                        1,
+                                                                        implementation,
+                                                                        "smaller")
+                name_smaller_than_cache = "svr_real_data_smaller_than_cache"
+                runners.plot_prediction_dispersion_sklearn(tree_model_smaller_than_cache_energy,
+                                                           validation_dataset_smaller_than_cache,
+                                                           validation_loader_smaller_than_cache,
+                                                           name_smaller_than_cache,
+                                                           path,
+                                                           1,
+                                                           model_used,
+                                                           implementation,
+                                                           "smaller")
 
     elif model_used == "mlp":
         if implementation == "None": 
