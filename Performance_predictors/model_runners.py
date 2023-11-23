@@ -191,7 +191,26 @@ def run_svr(kernel, C, epsilon, gamma, csv_path, system, out_feature, implementa
                 saved_model_path = MODEL_PATH + "{}/svr/{}/svr_gflops".format(system, implementation)
             elif out_feature == 1:
                 saved_model_path = MODEL_PATH + "{}/svr/{}/svr_energy_efficiency".format(system, implementation)
-
+    name = ""
+    path = ""
+    if implementation == "None":
+        if not(os.path.exists(MODEL_PATH + "{}/svr".format(system))):
+            os.makedirs(MODEL_PATH + "{}/svr".format(system))
+        
+        if out_feature == 0:
+            name = "svr_gflops_validation"
+        elif out_feature == 1:
+            name = "svr_energy_efficiency_validation"
+        path = MODEL_PATH + "{}/svr".format(system)
+    else:
+        if not(os.path.exists(MODEL_PATH + "{}/svr/{}".format(system, implementation))):
+            os.makedirs(MODEL_PATH + "{}/svr/{}".format(system, implementation))
+        
+        if out_feature == 0:
+            name = "svr_gflops_validation"
+        elif out_feature == 1:
+            name = "svr_energy_efficiency_validation"
+        path = MODEL_PATH + "{}/svr/{}".format(system, implementation)
     
     dump(svr_model.usualSVR, saved_model_path + ".joblib")
 
