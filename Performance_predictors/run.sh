@@ -1,10 +1,7 @@
-for implementation in AOCL CSR5 Vec-CSR Merge-CSR MKL-IE Naive-CSR SELL-C-s SparseX
+for model in tree svr mlp
 do
-    clear && python3 main.py -m mlp -s AMD-EPYC-24 -i ${implementation} -c
-
+    clear && python3 main.py -m ${model} -s AMD-EPYC-24 -i None
+    clear && python3 main.py -m ${model} -s AMD-EPYC-24 -i None -c
 done
-
-clear && python3 main.py -m mlp -s AMD-EPYC-24 -i None -c
-
 # TODO run svr and tree with cache and without implementation
 # TODO run mlp on all
