@@ -3,10 +3,15 @@ import torch
 import numpy as np
 
 class TreePredictor(torch.nn.Module):
-    def __init__(self, max_depth:int):
+    def __init__(self, max_depth:int = None,
+                 tree : DecisionTreeRegressor = None):
         super(TreePredictor, self).__init__()
-
-        self.tree = DecisionTreeRegressor(max_depth=max_depth)
+        if max_depth == None:
+            self.tree = tree
+        elif tree == None: 
+            self.tree = DecisionTreeRegressor(max_depth=max_depth)
+        else:
+            print("invalid arguments")
     def forward(self, x):
         return self.tree.predict(x)
 

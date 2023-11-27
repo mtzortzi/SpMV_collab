@@ -353,22 +353,24 @@ def load_svr_model(name, system, implementation) -> SVR_model.SvrPredictor:
     model_path = ""
     if implementation == "None":
         model_path = MODEL_PATH + "{}/svr/{}".format(system, name)
-        model = load(model_path + ".joblib")
-        svr_model = SVR_model.SvrPredictor(svr=model)
-
-        return svr_model
     else:
-        model_path = MODEL_PATH + "{}/svr/{}/{}".foramt(system, implementation, name)
-        model = load(model_path + ".joblib")
-        svr_model = SVR_model.SvrPredictor(svr=model)
-        return svr_model
+        model_path = MODEL_PATH + "{}/svr/{}/{}".format(system, implementation, name)
+    
+    model = load(model_path + ".joblib")
+    svr_model = SVR_model.SvrPredictor(svr=model)
+    return svr_model
 
-def load_tree_model(max_depth, name, system):
+def load_tree_model(max_depth, name, system, implementation):
     print("loading tree model")
-    model_path = MODEL_PATH + "/{}/tree/{}".format(system, name)
-    model = Tree_model.TreePredictor(max_depth)
-    model.load_state_dict(torch.load(model_path))
-    return model
+    model_path = ""
+    if implementation == "None":
+        model_path = MODEL_PATH + "/{}/tree/{}".format(system, name)
+    else:
+        model_path = MODEL_PATH + "/{}/tree/{}/{}".format(system, implementation, name)
+    
+    model = load(model_path + ".joblib")
+    tree_model = Tree_model.TreePredictor(tree=model)
+    return tree_model
 
 def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
                                    dataset:db.SparseMatrixDataset,
