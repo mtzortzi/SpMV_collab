@@ -57,13 +57,77 @@ if __name__ == "__main__":
     if load_model :
         if model_used == "mlp":
             if cache_split:
+                model_name_larger = ""
+                model_name_smaller = ""
+                csv_path_validation_larger = ""
+                csv_path_validation_smaller = ""
+                path = ""
+
                 if implementation != "None":
-                    print("Loading mlp model with cache split and {} implementation".format(implementation))
-                else:
-                    print("Loading mlp model with cache split and without implementation")
+                    model_name_larger = "{}_{}_{}epochs_larger_than_cache".format(model_used, implementation, MLP_globals.nb_epochs)
+                    model_name_smaller = "{}_{}_{}epochs_smaller_than_cache".format(model_used, implementation, MLP_globals.nb_epochs)
+                    csv_path_validation_larger = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_{}_than_cache.csv".format(system_used, implementation, "larger")
+                    csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_{}_than_cache.csv".format(system_used, implementation, "smaller")
+                    path = g.MODEL_PATH + "{}/{}/{}/{}/".format(system_used, model_used, MLP_globals.nb_epochs, implementation)
+                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_path_validation_larger, True)
+                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_path_validation_smaller, True)
+                elif implementation == "None":
+                    model_name_larger = "{}_{}epochs_larger_than_cache".format(model_used, MLP_globals.nb_epochs)
+                    model_name_smaller = "{}_{}epochs_smaller_than_cache".format(model_used, MLP_globals.nb_epochs)
+                    csv_path_validation_larger = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_than_cache.csv".format(system_used,  "larger")
+                    csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_than_cache.csv".format(system_used, "smaller")
+                    path = g.MODEL_PATH + "{}/{}/{}/".format(system_used, model_used, MLP_globals.nb_epochs)
+                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_path_validation_larger, False)
+                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_path_validation_smaller, False)
+                    
+                print("Loading mlp model with cache split and {} implementation".format(implementation))
+                print("Larger than cache")
+                
+                model_larger = runners.load_mlp_model(MLP_globals.activation_fn,
+                                                    MLP_globals.nb_hidden_layers,
+                                                    MLP_globals.in_dimension-1,
+                                                    MLP_globals.out_dimension,
+                                                    MLP_globals.hidden_size,
+                                                    model_name_larger,
+                                                    system_used,
+                                                    implementation)
+                
+                validation_loader = DataLoader(validation_dataset_larger, batch_size=1, shuffle=True)
+                graph_name = "mlp_{}_{}epochs".format(implementation, MLP_globals.nb_epochs)
+                runners.plot_prediction_dispersion_mlp(model_larger, validation_dataset_larger, validation_loader, model_name_larger, path, implementation, "larger")
+
+                print("Smaller than cache")
+                
+                
+                model_smaller = runners.load_mlp_model(MLP_globals.activation_fn,
+                                                    MLP_globals.nb_hidden_layers,
+                                                    MLP_globals.in_dimension-1,
+                                                    MLP_globals.out_dimension,
+                                                    MLP_globals.hidden_size,
+                                                    model_name_smaller,
+                                                    system_used,
+                                                    implementation)
+                validation_loader = DataLoader(validation_dataset_smaller, batch_size=1, shuffle=True)
+                graph_name = "mlp_{}_{}epochs".format(implementation, MLP_globals.nb_epochs)
+                runners.plot_prediction_dispersion_mlp(model_smaller, validation_dataset_smaller, validation_loader, model_name_smaller, path, implementation, "smaller")
             else:
                 if implementation != "None":
-                    print("Loading mlp model without cache splut and {} implementation".format(implementation))
+                    print("Loading mlp model without cache split and {} implementation".format(implementation))
+                    csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)
+                    model_name = "{}_{}_{}epochs".format(model_used, implementation, MLP_globals.nb_epochs)
+                    model = runners.load_mlp_model(MLP_globals.activation_fn,
+                                                   MLP_globals.nb_hidden_layers,
+                                                   MLP_globals.in_dimension-1,
+                                                   MLP_globals.out_dimension,
+                                                   MLP_globals.hidden_size,
+                                                   model_name,
+                                                   system_used,
+                                                   implementation)
+                    validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+                    validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
+                    graph_name = "mlp_{}_{}epochs".format(implementation, MLP_globals.nb_epochs)
+                    path = g.MODEL_PATH + "{}/{}/{}/{}/".format(system_used, model_used, MLP_globals.nb_epochs, implementation)
+                    runners.plot_prediction_dispersion_mlp(model, validation_dataset, validation_loader, model_name, path, implementation, "None")
                 else:
                     print("Loading mlp model without cache split and without implementation")
                     csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
@@ -74,12 +138,13 @@ if __name__ == "__main__":
                                                 MLP_globals.out_dimension,
                                                 MLP_globals.hidden_size,
                                                 model_name,
-                                                system_used)
+                                                system_used,
+                                                implementation)
                     
                     validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
                     validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
                     name = "mlp_{}epochs_load".format(MLP_globals.nb_epochs)
-                    path = g.MODEL_PATH + "{}/mlp".format(system_used)
+                    path = g.MODEL_PATH + "{}/{}/{}".format(system_used, model_used, MLP_globals.nb_epochs)
                     runners.plot_prediction_dispersion_mlp(model, validation_dataset, validation_loader, name, path, implementation, "None")
 
                     avg_loss_gflops = runners.average_loss_mlp(model, validation_loader, validation_dataset, 0)
@@ -89,21 +154,102 @@ if __name__ == "__main__":
                     print("Avg loss of model mlp on energy efficiency : {}%".format(avg_loss_energy_efficiency.detach().tolist()*100))
         
         elif model_used == "svr":
-            csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
-            models_name_gflops = "svr_gflops"
-            model_gflops = runners.load_svr_model(models_name_gflops, system_used)
-            validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
-            validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
-            graph_name_gflops = "svr_load"
-            path = g.MODEL_PATH + "{}/svr".format(system_used)
-            runners.plot_prediction_dispersion_sklearn(model_gflops, validation_dataset, validation_loader, graph_name_gflops, path, 0, model_used, implementation, "None")
+            if cache_split:
+                
+                model_name_larger = "svr_gflops_larger_than_cache"
+                model_name_smaller = "svr_gflops_smaller_than_cache"
+
+                if implementation != "None":
+                    csv_path_validation_larger = g.DATA_PATH + "/validation/all_foramt/all_format_{}_{}_larger_than_cache".format(system_used, implementation)
+                    csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_smaller_than_cache".format(system_used, implementation)
+                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_path_validation_larger, True)
+                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_path_validation_smaller, True)
+                    path = g.models + "{}/svr/{}".format(system_used, implementation)
+                if implementation == "None":
+                    csv_path_validation_larger = g.DATA_PATH + "/validation/all_foramt/all_format_{}_larger_than_cache".format(system_used)
+                    csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_smaller_than_cache".format(system_used)
+                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_path_validation_larger, False)
+                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_path_validation_smaller, False)
+                    path = g.models + "{}/svr".format(system_used)
+                
+                print("Larger than cache gflops")
+                models_name_gflops = "svr_gflops_larger_than_cache"
+                model_gflops = runners.load_svr_model(models_name_gflops, system_used)
+                validation_loader = DataLoader(validation_dataset_larger, batch_size=1, shuffle=True)
+                graph_name_gflops = "svr_load"
+                runners.plot_prediction_dispersion_sklearn(model_gflops, validation_dataset_larger, validation_loader, graph_name_gflops, path, 0, model_used, implementation, "None")
+
+                print("Smaller than cache gflops")
+                models_name_gflops = "svr_gflops_smaller_than_cache"
+                model_gflops = runners.load_svr_model(models_name_gflops, system_used)
+                validation_loader = DataLoader(validation_dataset_smaller, batch_size=1, shuffle=True)
+                graph_name_gflops = "svr_load"
+                runners.plot_prediction_dispersion_sklearn(model_gflops, validation_dataset_smaller, validation_loader, graph_name_gflops, path, 0, model_used, implementation, "None")
+            else:
+                if implementation != "None":
+                    csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)
+                    validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+                    path = g.models + "{}/svr/{}".format(system_used, implementation)        
+                if implementation == "None":
+                    csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
+                    validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
+                    path = g.MODEL_PATH + "{}/svr".format(system_used)
+                
+                
+                models_name_gflops = "svr_gflops"
+                model_gflops = runners.load_svr_model(models_name_gflops, system_used)
+                validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
+                graph_name_gflops = "svr_load"
+                runners.plot_prediction_dispersion_sklearn(model_gflops, validation_dataset, validation_loader, graph_name_gflops, path, 0, model_used, implementation, "None")
         
         elif model_used == "tree":
-            csv_path_validation = g.DATA_PATH + "/validation/all_foramt/all_format_{}.csv".format(system_used)
-            model_name_gflops = "tree_gflops"
-            model_gflops = runners.load_tree_model(model_name_gflops, system_used)
-            validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation)
-            validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
+            if cache_split:
+                model_name_larger = "tree_gflops_larger_than_cache"
+                model_name_smaller = "tree_gflops_smaller_than_cache"
+                
+                if implementation != "None":
+                    csv_path_validation_larger = g.DATA_PATH + "/validation/all_foramt/all_format_{}_{}_larger_than_cache".format(system_used, implementation)
+                    csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_smaller_than_cache".format(system_used, implementation)
+                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_path_validation_larger, True)
+                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_path_validation_smaller, True)
+                    path = g.models + "{}/tree/{}".format(system_used, implementation)
+                if implementation == "None":
+                    csv_path_validation_larger = g.DATA_PATH + "/validation/all_foramt/all_format_{}_larger_than_cache".format(system_used)
+                    csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_smaller_than_cache".format(system_used)
+                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_path_validation_larger, False)
+                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_path_validation_smaller, False)
+                    path = g.models + "{}/tree".format(system_used)
+                
+                print("Larger than cache gflops")
+                models_name_gflops = "tree_gflops_larger_than_cache"
+                model_gflops = runners.load_tree_model(models_name_gflops, system_used)
+                validation_loader = DataLoader(validation_dataset_larger, batch_size=1, shuffle=True)
+                graph_name_gflops = "tree_load"
+                runners.plot_prediction_dispersion_sklearn(model_gflops, validation_dataset_larger, validation_loader, graph_name_gflops, path, 0, model_used, implementation, "None")
+
+                print("Smaller than cache gflops")
+                models_name_gflops = "tree_gflops_smaller_than_cache"
+                model_gflops = runners.load_tree_model(models_name_gflops, system_used)
+                validation_loader = DataLoader(validation_dataset_smaller, batch_size=1, shuffle=True)
+                graph_name_gflops = "tree_load"
+                runners.plot_prediction_dispersion_sklearn(model_gflops, validation_dataset_smaller, validation_loader, graph_name_gflops, path, 0, model_used, implementation, "None")
+            else:
+                if implementation != "None":
+                    csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)
+                    validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+                    path = g.models + "{}/tree/{}".format(system_used, implementation)        
+                if implementation == "None":
+                    csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
+                    validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
+                    path = g.MODEL_PATH + "{}/tree".format(system_used)
+                
+                
+                models_name_gflops = "tree_gflops"
+                model_gflops = runners.load_tree_model(models_name_gflops, system_used)
+                validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
+                graph_name_gflops = "tree_load"
+                runners.plot_prediction_dispersion_sklearn(model_gflops, validation_dataset, validation_loader, graph_name_gflops, path, 0, model_used, implementation, "None")
+
             
     elif cache_split:
         if model_used == "mlp":

@@ -330,24 +330,38 @@ def load_mlp_model(activation_fn,
                  out_dimension, 
                  hidden_size,
                  name,
-                 system):
+                 system,
+                 implementation):
     print("loading mlp model")
     model = MLP_model.MlpPredictor(activation_fn, 
                                    nb_hidden_layers,
                                    in_dimension,
                                    out_dimension,
                                    hidden_size)
-    model_path = MODEL_PATH + "/{}/mlp/{}/{}".format(system, MLP_globals.nb_epochs, name)
-    model.load_state_dict(torch.load(model_path))
-    return model
+    model_path = ""
+    if implementation == "None":
+        model_path = MODEL_PATH + "/{}/mlp/{}/{}".format(system, MLP_globals.nb_epochs, name)
+        model.load_state_dict(torch.load(model_path))
+        return model
+    else:
+        model_path = MODEL_PATH + "/{}/mlp/{}/{}/{}".format(system, MLP_globals.nb_epochs, implementation, name)
+        model.load_state_dict(torch.load(model_path))
+        return model
 
-def load_svr_model(name, system) -> SVR_model.SvrPredictor:
+def load_svr_model(name, system, implementation) -> SVR_model.SvrPredictor:
     print("loading svr model")
-    model_path = MODEL_PATH + "{}/svr/{}".format(system, name)
-    model = load(model_path + ".joblib")
-    svr_model = SVR_model.SvrPredictor(svr=model)
+    model_path = ""
+    if implementation == "None":
+        model_path = MODEL_PATH + "{}/svr/{}".format(system, name)
+        model = load(model_path + ".joblib")
+        svr_model = SVR_model.SvrPredictor(svr=model)
 
-    return svr_model
+        return svr_model
+    else:
+        model_path = MODEL_PATH + "{}/svr/{}/{}".foramt(system, implementation, name)
+        model = load(model_path + ".joblib")
+        svr_model = SVR_model.SvrPredictor(svr=model)
+        return svr_model
 
 def load_tree_model(max_depth, name, system):
     print("loading tree model")
