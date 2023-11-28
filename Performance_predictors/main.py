@@ -765,7 +765,7 @@ if __name__ == "__main__":
         
         # Plotting predictions
         name = "mlp_{}epochs_real_data".format(MLP_globals.nb_epochs)
-        runners.plot_prediction_dispersion_mlp(mlp_model, validation_dataset, validation_loader, name, path, implementation)
+        runners.plot_prediction_dispersion_mlp(mlp_model, validation_dataset, validation_loader, name, path, implementation, "None")
 
         # Computing average loss on validation dataset
         avg_loss_gflops = runners.average_loss_mlp(mlp_model, validation_loader, validation_dataset, 0)
