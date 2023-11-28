@@ -164,7 +164,7 @@ The main program consists of several bricks to work. First, it retrieves paramet
 
 All of these features need to be scaled from 0 to 1 (except the avg_bandwidth_scaled which is already scaled and the system is a string). We scale our data in order to increase stability in the learning process. For the system feature, given the fact that it's a string we used a one-hot encoding system, where we retrived each unique class and associated it with a unique number in [0, nb_class - 1].
 
-Finally, in the [globals.py](https://github.com/mtzortzi/SpMV_collab/blob/main/Performance_predictors/globals.py) file you will find the global path for the dataset and the saved models, the different hardware systems that are implemented in the dataset, and the implemented models.
+Finally, in the [globals.py](https://github.com/mtzortzi/SpMV_collab/blob/main/Performance_predictors/globals.py) file you will find the global path for the dataset and the saved models, the different hardware systems that are implemented in the dataset, and the implemented models. These paths needs to be modified to the path where you saved the dataset on your computer.
 
 
 ## How to make it work on your computer
@@ -173,11 +173,12 @@ If you want to add a new model you must do the following :
 1. Create a new folder associated with your model with the ``model.py`` and ``globals.py`` associated with it. Also, it is mandatory that your model class inherits the torch.nn.Module class.
 2. Add the corresponding function to run your model in the runner
 3. Add the name of your implemented model in the `models` array in the globals.py file.
-4. Finally in the main program add a hookup to the parameter parser in order to run or load ur model when executing the program.
+4. Then in the main program add a hookup to the parameter parser in order to run or load ur model when executing the program.
+5. Finally add a hookup in the main program to parse if you want to use splitted dataset on implementation and/or cache
 
 ### Running it on your computer
 ```
-usage: main.py [-h] -m MODEL -s SYSTEM [-l]
+usage: main.py [-h] -m MODEL -s SYSTEM -i IMPLEMENTATION [-c] [-l]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -185,6 +186,8 @@ optional arguments:
                         Model name to run
   -s SYSTEM, --system SYSTEM
                         CPU/GPU name
-  -l, --load            Load the model described from it's hyperparameters in it's 
-  corresponding global.py file and the -m parameter described above
+  -i IMPLEMENTATION, --implementation IMPLEMENTATION
+                        Implementation of the matrix, None if you want to use all implementations
+  -c, --cache-split     Tell if we want to use dataset seperated based on cache size
+  -l, --load            Load the model described from it's hyperparameters in it's corresponfing global.py file and the -m parameter described above
 ````

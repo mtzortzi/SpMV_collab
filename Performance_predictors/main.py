@@ -845,13 +845,13 @@ if __name__ == "__main__":
             csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
             csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
             validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
-            path = g.MODEL_PATH + "{}/svr".format(system_used)
+            path = g.MODEL_PATH + "{}/tree".format(system_used)
         else:
             print("Running Tree with {} system with {} implementation without cache split".format(system_used, implementation))
             csv_path = g.DATA_PATH + "/all_format/all_format_{}_{}.csv".format(system_used, implementation)
             csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)
             validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
-            path = g.MODEL_PATH + "{}/svr/{}".format(system_used, implementation)
+            path = g.MODEL_PATH + "{}/tree/{}".format(system_used, implementation)
         validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
         
         # Running model
