@@ -1,4 +1,4 @@
-for model in tree svr mlp
+for model in mlp
 do
     clear && python3 main.py -m ${model} -s AMD-EPYC-24 -i None
     clear && python3 main.py -m ${model} -s AMD-EPYC-24 -i None -c
