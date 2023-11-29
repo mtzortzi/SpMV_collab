@@ -426,16 +426,10 @@ def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
     
     plt.title(plot_title)
 
-    if implementation == "None":
-        if cache != "None":
-            plot.get_figure().savefig("{}/scattering_{}_{}_than_cache.png".format(path, name, cache))
-        else:
-            plot.get_figure().savefig("{}/scaterring_{}.png".format(path, name))
+    if cache != "None":
+        plot.get_figure().savefig("{}/scattering_{}_{}_than_cache.png".format(path, name, cache))
     else:
-        if cache != "None":
-            plot.get_figure().savefig("{}/scattering_{}_{}_{}_than_cache.png".format(path, name, implementation, cache))
-        else:
-            plot.get_figure().savefig("{}/scattering_{}_{}.png".format(path, name, implementation))
+        plot.get_figure().savefig("{}/scaterring_{}.png".format(path, name))
     
     
     if model_name == "tree":
