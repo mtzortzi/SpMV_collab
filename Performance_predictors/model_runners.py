@@ -360,7 +360,7 @@ def load_svr_model(name, system, implementation) -> SVR_model.SvrPredictor:
     svr_model = SVR_model.SvrPredictor(svr=model)
     return svr_model
 
-def load_tree_model(max_depth, name, system, implementation):
+def load_tree_model(name, system, implementation):
     print("loading tree model")
     model_path = ""
     if implementation == "None":
@@ -426,10 +426,16 @@ def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
     
     plt.title(plot_title)
 
-    if cache != "None":
-        plot.get_figure().savefig("{}/scattering_{}_{}_than_cache.png".format(path, name, cache))
+    if implementation == "None":
+        if cache != "None":
+            plot.get_figure().savefig("{}/scattering_{}_{}_than_cache.png".format(path, name, cache))
+        else:
+            plot.get_figure().savefig("{}/scaterring_{}.png".format(path, name))
     else:
-        plot.get_figure().savefig("{}/scaterring_{}.png".format(path, name))
+        if cache != "None":
+            plot.get_figure().savefig("{}/scattering_{}_{}_{}_than_cache.png".format(path, name, implementation, cache))
+        else:
+            plot.get_figure().savefig("{}/scattering_{}_{}.png".format(path, name, implementation))
     
     
     if model_name == "tree":
@@ -483,13 +489,19 @@ def plot_prediction_dispersion_mlp(model:torch.nn.Module,
     plt.xlabel("Predictions")
     plt.ylabel("Expectations")
     plt.title("gflops_scattering")
-    print(path, "/gflops_scattering_",name, "_", cache, "_than_cache.png")
-
-    if cache != "None":
-        plot.get_figure().savefig("{}/gflops_scattering_{}_{}_than_cache.png".format(path, name, cache))
+    
+    if implementation == "None":
+        if cache != "None":
+            print(path, "/gflops_scattering_", name, "_", cache, "_than_cache.png")
+            plot.get_figure().savefig("{}/gflops_scattering_{}_{}_than_cache.png".format(path, name, cache))
+        else:
+            plot.get_figure().savefig("{}/gflops_scattering_{}.png".format(path, name))
     else:
-        plot.get_figure().savefig("{}/gflops_scattering_{}.png".format(path, name))
-        
+        if cache != "None":
+            print(path, "/gflops_scattering_",name, "_", implementation, cache, "_than_cache.png")
+            plot.get_figure().savefig("{}/gflops_scattering_{}_{}_{}_than_cache.png".format(path, name, implementation, cache))
+        else:
+            plot.get_figure().savefig("{}/gflops_scattering_{}_{}.png".format(path, name, implementation))
     plt.clf()
 
     # Ploting energy efficiency scattering
@@ -503,12 +515,18 @@ def plot_prediction_dispersion_mlp(model:torch.nn.Module,
     plt.xlabel("Predictions")
     plt.ylabel("Expectations")
     plt.title("energy_efficieny_scattering")
-
-    print(path, "/energy_efficiency_scattering_",name, "_", cache, "_than_cache.png")
-    if cache != "None":
-        plot.get_figure().savefig("{}/energy_efficiency_scattering_{}_{}_than_cache.png".format(path, name, cache))
+    if implementation == "None":
+        if cache != "None":
+            print(path, "/energy_efficiency_scattering_",name, "_", cache, "_than_cache.png")
+            plot.get_figure().savefig("{}/energy_efficiency_scattering_{}_{}_than_cache.png".format(path, name, cache))
+        else:
+            plot.get_figure().savefig("{}/energy_efficiency_scattering_{}.png".format(path, name))
     else:
-        plot.get_figure().savefig("{}/energy_efficiency_scattering_{}.png".format(path, name))
+        if cache != "None":
+            print(path, "/energy_efficiency_scattering_",name, "_", implementation, cache, "_than_cache.png")
+            plot.get_figure().savefig("{}/energy_efficiency_scattering_{}_{}_{}_than_cache.png".format(path, name, implementation, cache))
+        else:
+            plot.get_figure().savefig("{}/energy_efficiency_scattering_{}_{}.png".format(path, name, implementation))
     plt.clf()
 
 def average_loss_mlp(model:torch.nn.Module, validation_loader:DataLoader, validation_dataset:db.SparseMatrixDataset, out_feature:int):
