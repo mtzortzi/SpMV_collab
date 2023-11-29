@@ -489,16 +489,13 @@ def plot_prediction_dispersion_mlp(model:torch.nn.Module,
     plt.xlabel("Predictions")
     plt.ylabel("Expectations")
     plt.title("gflops_scattering")
-    if implementation == "None":
-        if cache != "None":
-            plot.get_figure().savefig("{}/gflops_scattering_{}_{}_than_cache.png".format(path, name, cache))
-        else:
-            plot.get_figure().savefig("{}/gflops_scattering_{}.png".format(path, name))
+    print(path, "/gflops_scattering_",name, "_", cache, "_than_cache.png")
+
+    if cache != "None":
+        plot.get_figure().savefig("{}/gflops_scattering_{}_{}_than_cache.png".format(path, name, cache))
     else:
-        if cache != "None":
-            plot.get_figure().savefig("{}/gflops_scattering_{}_{}_{}_than_cache.png".format(path, name, implementation, cache))
-        else:
-            plot.get_figure().savefig("{}/gflops_scattering_{}_{}.png".format(path, name, implementation))
+        plot.get_figure().savefig("{}/gflops_scattering_{}.png".format(path, name))
+        
     plt.clf()
 
     # Ploting energy efficiency scattering
@@ -512,16 +509,12 @@ def plot_prediction_dispersion_mlp(model:torch.nn.Module,
     plt.xlabel("Predictions")
     plt.ylabel("Expectations")
     plt.title("energy_efficieny_scattering")
-    if implementation == "None":
-        if cache != "None":
-            plot.get_figure().savefig("{}/energy_efficiency_scattering_{}_{}_than_cache.png".format(path, name, cache))
-        else:
-            plot.get_figure().savefig("{}/energy_efficiency_scattering_{}.png".format(path, name))
+
+    print(path, "/energy_efficiency_scattering_",name, "_", cache, "_than_cache.png")
+    if cache != "None":
+        plot.get_figure().savefig("{}/energy_efficiency_scattering_{}_{}_than_cache.png".format(path, name, cache))
     else:
-        if cache != "None":
-            plot.get_figure().savefig("{}/energy_efficiency_scattering_{}_{}_{}_than_cache.png".format(path, name, implementation, cache))
-        else:
-            plot.get_figure().savefig("{}/energy_efficiency_scattering_{}_{}.png".format(path, name, implementation))
+        plot.get_figure().savefig("{}/energy_efficiency_scattering_{}.png".format(path, name))
     plt.clf()
 
 def average_loss_mlp(model:torch.nn.Module, validation_loader:DataLoader, validation_dataset:db.SparseMatrixDataset, out_feature:int):

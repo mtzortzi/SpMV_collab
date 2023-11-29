@@ -64,8 +64,8 @@ if __name__ == "__main__":
                 path = ""
 
                 if implementation != "None":
-                    model_name_larger = "{}_{}_{}epochs_larger_than_cache".format(model_used, implementation, MLP_globals.nb_epochs)
-                    model_name_smaller = "{}_{}_{}epochs_smaller_than_cache".format(model_used, implementation, MLP_globals.nb_epochs)
+                    model_name_larger = "{}_{}epochs_{}_larger_than_cache".format(model_used, MLP_globals.nb_epochs, implementation)
+                    model_name_smaller = "{}_{}epochs_{}_smaller_than_cache".format(model_used, MLP_globals.nb_epochs, implementation)
                     csv_path_validation_larger = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_{}_than_cache.csv".format(system_used, implementation, "larger")
                     csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_{}_than_cache.csv".format(system_used, implementation, "smaller")
                     path = g.MODEL_PATH + "{}/{}/{}/{}/".format(system_used, model_used, MLP_globals.nb_epochs, implementation)
@@ -93,8 +93,8 @@ if __name__ == "__main__":
                                                     implementation)
                 
                 validation_loader = DataLoader(validation_dataset_larger, batch_size=1, shuffle=True)
-                graph_name = "mlp_{}_{}epochs".format(implementation, MLP_globals.nb_epochs)
-                runners.plot_prediction_dispersion_mlp(model_larger, validation_dataset_larger, validation_loader, model_name_larger, path, implementation, "larger")
+                graph_name = "mlp_{}_{}epochs_load".format(implementation, MLP_globals.nb_epochs)
+                runners.plot_prediction_dispersion_mlp(model_larger, validation_dataset_larger, validation_loader, graph_name, path, implementation, "larger")
 
                 print("Smaller than cache")
                 
@@ -108,8 +108,8 @@ if __name__ == "__main__":
                                                     system_used,
                                                     implementation)
                 validation_loader = DataLoader(validation_dataset_smaller, batch_size=1, shuffle=True)
-                graph_name = "mlp_{}_{}epochs".format(implementation, MLP_globals.nb_epochs)
-                runners.plot_prediction_dispersion_mlp(model_smaller, validation_dataset_smaller, validation_loader, model_name_smaller, path, implementation, "smaller")
+                graph_name = "mlp_{}_{}epochs_load".format(implementation, MLP_globals.nb_epochs)
+                runners.plot_prediction_dispersion_mlp(model_smaller, validation_dataset_smaller, validation_loader, graph_name, path, implementation, "smaller")
             else:
                 if implementation != "None":
                     print("Loading mlp model without cache split and {} implementation".format(implementation))
