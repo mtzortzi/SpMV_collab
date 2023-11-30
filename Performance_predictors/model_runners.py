@@ -19,6 +19,8 @@ from Tree.model import TreePredictor
 from utils_func import get_implementations_list
 import os
 from joblib import dump, load
+import re
+import pandas as pd
 
 def run_mlp(activation_function,
             nb_hidden_layers,
@@ -152,8 +154,8 @@ def run_mlp(activation_function,
 
 def predict_mlp(model, input, scaler_gflops:preprocessing.MinMaxScaler, scaler_energy_efficiency:preprocessing.MinMaxScaler):
     Y_pred = model(input.float())
-    gflops_predicted_unscaled = torch.tensor(scaler_gflops.inverse_transform(Y_pred[0][0].detach().view(1, -1)))
-    energy_efficiency_predicted_unscaled = torch.tensor(scaler_energy_efficiency.inverse_transform(Y_pred[0][1].detach().view(1, -1)))
+    gflops_predicted_unscaled = torch.tensor(scaler_gflops.inverse_transform(Y_pred[0].detach().view(1, -1)))
+    energy_efficiency_predicted_unscaled = torch.tensor(scaler_energy_efficiency.inverse_transform(Y_pred[1].detach().view(1, -1)))
     prediction = torch.cat((gflops_predicted_unscaled, energy_efficiency_predicted_unscaled), 1)
     return prediction
 
@@ -332,7 +334,6 @@ def load_mlp_model(activation_fn,
                  name,
                  system,
                  implementation):
-    print("loading mlp model")
     model = MLP_model.MlpPredictor(activation_fn, 
                                    nb_hidden_layers,
                                    in_dimension,
@@ -374,7 +375,6 @@ def load_tree_model(name, system, implementation):
 
 def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
                                    dataset:db.SparseMatrixDataset,
-                                   loader:DataLoader,
                                    name:str,
                                    path:str,
                                    out_feature:int,
@@ -385,9 +385,8 @@ def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
     assert model_name in models
     predictions = []
     expectations = []
-    for batch in loader:
-        (X, Y) = batch
-        (X, Y) = (X[0], Y[0])
+    for idx in range(len(dataset)):
+        (X, Y) = dataset[idx]
         input = np.array([X.numpy()])
         y_pred = model(input)
         if out_feature == 0:
@@ -404,7 +403,7 @@ def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
     if implementation != "None":
         sns.scatterplot(x=predictions, y=expectations)
     else:
-        implementations = get_implementations_list(loader, dataset)
+        implementations = get_implementations_list( dataset)
         sns.scatterplot(x=predictions, y=expectations, hue=implementations)
     
     if out_feature == 0:
@@ -447,10 +446,10 @@ def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
             plt.savefig("{}/{}.pdf".format(path, name))
         else:
             plt.savefig("{}/{}_{}.pdf".format(path, name, implementation))
+    plt.clf()
 
 def plot_prediction_dispersion_mlp(model:torch.nn.Module, 
                                    dataset:dataReader.SparseMatrixDataset,
-                                   loader: DataLoader,
                                    name:str, 
                                    path:str,
                                    implementation : str,
@@ -459,11 +458,11 @@ def plot_prediction_dispersion_mlp(model:torch.nn.Module,
     
     predictions = []
     expectations = []
-    for batch in loader:
-        (X, Y) = batch
+    for idx in range(len(dataset)):
+        (X, Y) = dataset[idx]
         prediction = predict_mlp(model, X, dataset.scaler_gflops, dataset.scaler_energy_efficiency)
-        gflops_unscaled = torch.tensor(dataset.scaler_gflops.inverse_transform(Y[0][0].view(1, -1)))
-        energy_efficiency_unscaled = torch.tensor(dataset.scaler_energy_efficiency.inverse_transform(Y[0][1].view(1, -1)))
+        gflops_unscaled = torch.tensor(dataset.scaler_gflops.inverse_transform(Y[0].view(1, -1)))
+        energy_efficiency_unscaled = torch.tensor(dataset.scaler_energy_efficiency.inverse_transform(Y[1].view(1, -1)))
         expectation = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1) 
         predictions.append(prediction.numpy().flatten().tolist())
         expectations.append(expectation.numpy().flatten().tolist())
@@ -483,7 +482,7 @@ def plot_prediction_dispersion_mlp(model:torch.nn.Module,
     if implementation != "None":
         sns.scatterplot(x=gflops_predictions, y=gflops_expectations)
     else:
-        implementations = get_implementations_list(loader, dataset)
+        implementations = get_implementations_list(dataset)
         sns.scatterplot(x=gflops_predictions, y=gflops_expectations, hue=implementations)
     plot = sns.lineplot(x=identity_gflops, y=identity_gflops, color="red")
     plt.xlabel("Predictions")
@@ -509,7 +508,7 @@ def plot_prediction_dispersion_mlp(model:torch.nn.Module,
     if implementation != "None":
         sns.scatterplot(x=energy_efficiency_predictions, y=energy_efficiency_expectations)
     else:
-        implementations = get_implementations_list(loader, dataset)
+        implementations = get_implementations_list(dataset)
         sns.scatterplot(x=energy_efficiency_predictions, y=energy_efficiency_expectations, hue=implementations)
     plot = sns.lineplot(x=identity_energy_efficiency, y=identity_energy_efficiency, color="red")
     plt.xlabel("Predictions")
@@ -528,6 +527,42 @@ def plot_prediction_dispersion_mlp(model:torch.nn.Module,
         else:
             plot.get_figure().savefig("{}/energy_efficiency_scattering_{}_{}.png".format(path, name, implementation))
     plt.clf()
+
+def plot_performance(model_lst:list,
+                     validation_dataset_lst:list[db.SparseMatrixDataset],
+                     model_name_lst:list[str]):
+    
+    d : dict = {"model_name" : list(), "loss" : list()}
+    loss_fnc = MeanAbsolutePercentageError()
+    for i in range(len(model_lst)):
+        for idx in range(len(validation_dataset_lst[i])):
+            (X, Y) = validation_dataset_lst[i][idx]
+            modelType = re.search("mlp", model_name_lst[i])
+            if modelType != None:
+                prediction = predict_mlp(model_lst[i], X, validation_dataset_lst[i].scaler_gflops, validation_dataset_lst[i].scaler_energy_efficiency)
+                gflops_unscaled = torch.tensor(validation_dataset_lst[i].scaler_gflops.inverse_transform(Y[0].view(1, -1)))
+                energy_efficiency_unscaled = torch.tensor(validation_dataset_lst[i].scaler_energy_efficiency.inverse_transform(Y[1].view(1, -1)))
+                expectation = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1) 
+            else:
+                (X, Y) = validation_dataset_lst[i][idx]
+                input = np.array([X.numpy()])
+                y_pred = model_lst[i](input)
+                prediction = torch.tensor(validation_dataset_lst[i].scaler_gflops.inverse_transform(y_pred.reshape(-1, 1)))
+                expectation = torch.tensor(validation_dataset_lst[i].scaler_gflops.inverse_transform(Y[0].view(-1, 1)))
+            
+            
+            loss = loss_fnc(prediction, expectation)
+            d["model_name"].append(model_name_lst[i])
+            d['loss'].append(loss.tolist())
+    df = pd.DataFrame(data=d)
+    print(df)
+    plt.figure(figsize=(10,7))
+    # plt.xlim(0, 5)
+    for i in range(len(model_name_lst)):
+        sns.boxplot(data=df, x="loss", y="model_name", showfliers=False)
+    
+    plt.savefig("boxplot.png")
+    
 
 def average_loss_mlp(model:torch.nn.Module, validation_loader:DataLoader, validation_dataset:db.SparseMatrixDataset, out_feature:int):
     print("Average loss mlp")
