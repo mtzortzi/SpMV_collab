@@ -9,6 +9,7 @@ from torch.utils.data.sampler import SubsetRandomSampler
 from torch.utils.data import DataLoader
 from torchmetrics.regression import MeanAbsolutePercentageError
 import matplotlib.pyplot as plt
+from matplotlib.cbook import boxplot_stats
 import numpy as np
 from globals import MODEL_PATH, DATA_PATH, models
 import dataReader as db
@@ -391,7 +392,6 @@ def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
     for idx in tqdm(range(len(dataset))):
         (X, Y) = dataset[idx]
         input = np.array([X.numpy()])
-        print(input)
         y_pred = model(input)
         if out_feature == 0:
             y_pred_unscaled = torch.tensor(dataset.scaler_gflops.inverse_transform(y_pred.reshape(-1, 1)))
@@ -536,7 +536,9 @@ def plot_performance(model_lst:list,
                      validation_dataset_lst:list[db.SparseMatrixDataset],
                      model_name_lst:list[str],
                      save_path:str,
-                     graph_name:str):
+                     graph_name:str,
+                     show_fliers:bool,
+                     using_violin_plot:bool):
     
     d : dict = {"model_name" : list(), "loss" : list()}
     loss_fnc = MeanAbsolutePercentageError()
@@ -560,11 +562,23 @@ def plot_performance(model_lst:list,
             loss = loss_fnc(prediction, expectation)
             d["model_name"].append(model_name_lst[i])
             d['loss'].append(loss.tolist())
-    df = pd.DataFrame(data=d)
+    df = pd.DataFrame(data=d, columns=('model_name', 'loss'))
     plt.figure(figsize=(15,7))
-    for i in range(len(model_name_lst)):
-        sns.boxplot(data=df, x="loss", y="model_name", showfliers=False)
+    outliers_dict : dict = dict()
+    if using_violin_plot:
+        for i in range(len(model_name_lst)):
+                sns.violinplot(data=df, x="loss", y="model_name")
+                outliers_dict[model_name_lst[i]] = len([y for stat in boxplot_stats(df['loss']) for y in stat['fliers']])
+        graph_name += "_violingPlot"
+    else:
+        for i in range(len(model_name_lst)):
+            sns.boxplot(data=df, x="loss", y="model_name", showfliers=show_fliers)
+            outliers_dict[model_name_lst[i]] = len([y for stat in boxplot_stats(df['loss']) for y in stat['fliers']])
+
     print("saving boxplot")
+    # print(outliers_dict)
+    if show_fliers:
+        graph_name += "_with_fliers"
     plt.title(graph_name)
     plt.savefig(save_path + graph_name + ".png")
     

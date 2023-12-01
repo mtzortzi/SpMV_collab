@@ -130,7 +130,11 @@ if __name__ == "__main__":
                     validation_dataset_lst.append(validation_dataset_smaller)
             save_path = "./Performance_Summary/"
             graph_name = "BP_cache_{}".format(system_used)
-            runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst, save_path, graph_name)
+            
+            runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst, save_path, graph_name, True, False)
+            runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst, save_path, graph_name, False, False)
+            runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst, save_path, graph_name, False, True)
+
         else:
             print("Plotting performance for {} without cache split".format(system_used))
             model_name_lst : list = list()
@@ -162,11 +166,12 @@ if __name__ == "__main__":
                     tempModelTree = runners.load_tree_model(model_name_tree, system_used, "None")
                     model_lst.append(tempModelTree)
                     validation_dataset_lst.append(validation_dataset)
-            print(model_lst)
-            print(model_name_lst)
             save_path = "./Performance_Summary/"
             graph_name = "BP_{}".format(system_used)
-            runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst, save_path, graph_name)
+            
+            runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst, save_path, graph_name, True, False)
+            runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst, save_path, graph_name, False, False)
+            runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst, save_path, graph_name, False, True)
 
 
     if load_model :
