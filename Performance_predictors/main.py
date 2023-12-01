@@ -49,7 +49,10 @@ if __name__ == "__main__":
     
 
     if performance:
-        assert model_used == None and implementation == None and load_model == False and cache_split == False
+        assert model_used == None and implementation == None and load_model == False and system_used != None
+        if system_used == "Tesla-A100":
+            assert not(cache_split)
+        
     else:
         assert model_used in g.models
         assert system_used in g.hardware
@@ -67,70 +70,103 @@ if __name__ == "__main__":
     #                  validation_dataset_lst:list[db.SparseMatrixDataset],
     #                  model_name_lst:list[str]):
     if performance:
-        print("Plotting performances for CPU with cache split")
-        model_name_lst : list = list()
-        model_lst : list = list()
-        validation_dataset_lst : list[dataReader.SparseMatrixDataset] = list()
-        system_used = "AMD-EPYC-24"
-        for model in g.models:
-            model_name_lst.append("{}_CPU_LC".format(model))
-            model_name_lst.append("{}_CPU_SC".format(model))
-            csv_path_validation_larger = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_than_cache.csv".format(system_used, "larger")
-            csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_than_cache.csv".format(system_used, "smaller")
-            validation_dataset_larger = dataReader.SparseMatrixDataset(csv_path_validation_larger, False)
-            validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_path_validation_smaller, False)
-            if model == "mlp":
-                model_name_larger = "{}_{}epochs_larger_than_cache".format(model, MLP_globals.nb_epochs)
-                model_name_smaller = "{}_{}epochs_smaller_than_cache".format(model, MLP_globals.nb_epochs)
-                
+        if cache_split:
+            print("Plotting performances for {} with cache split".format(system_used))
+            model_name_lst : list = list()
+            model_lst : list = list()
+            validation_dataset_lst : list[dataReader.SparseMatrixDataset] = list()
+            for model in g.models:
+                model_name_lst.append("{}_{}_LC".format(model, system_used))
+                model_name_lst.append("{}_{}_SC".format(model, system_used))
+                csv_path_validation_larger = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_than_cache.csv".format(system_used, "larger")
+                csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_than_cache.csv".format(system_used, "smaller")
+                validation_dataset_larger = dataReader.SparseMatrixDataset(csv_path_validation_larger, False)
+                validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_path_validation_smaller, False)
+                if model == "mlp":
+                    model_name_larger = "{}_{}epochs_larger_than_cache".format(model, MLP_globals.nb_epochs)
+                    model_name_smaller = "{}_{}epochs_smaller_than_cache".format(model, MLP_globals.nb_epochs)
+                    
 
-                tempModelLarger = runners.load_mlp_model(MLP_globals.activation_fn,
-                                                    MLP_globals.nb_hidden_layers,
-                                                    MLP_globals.in_dimension,
-                                                    MLP_globals.out_dimension,
-                                                    MLP_globals.hidden_size,
-                                                    model_name_larger,
-                                                    system_used,
-                                                    "None")
-                tempModelSmaller = model_smaller = runners.load_mlp_model(MLP_globals.activation_fn,
-                                                    MLP_globals.nb_hidden_layers,
-                                                    MLP_globals.in_dimension,
-                                                    MLP_globals.out_dimension,
-                                                    MLP_globals.hidden_size,
-                                                    model_name_smaller,
-                                                    system_used,
-                                                    "None")
+                    tempModelLarger = runners.load_mlp_model(MLP_globals.activation_fn,
+                                                        MLP_globals.nb_hidden_layers,
+                                                        MLP_globals.in_dimension,
+                                                        MLP_globals.out_dimension,
+                                                        MLP_globals.hidden_size,
+                                                        model_name_larger,
+                                                        system_used,
+                                                        "None")
+                    tempModelSmaller = model_smaller = runners.load_mlp_model(MLP_globals.activation_fn,
+                                                        MLP_globals.nb_hidden_layers,
+                                                        MLP_globals.in_dimension,
+                                                        MLP_globals.out_dimension,
+                                                        MLP_globals.hidden_size,
+                                                        model_name_smaller,
+                                                        system_used,
+                                                        "None")
 
-                model_lst.append(tempModelLarger)
-                model_lst.append(tempModelSmaller)
-                validation_dataset_lst.append(validation_dataset_larger)
-                validation_dataset_lst.append(validation_dataset_smaller)
-            elif model == "svr":
-                models_name_gflops_larger = "svr_gflops_larger_than_cache"
-                models_name_gflops_smaller = "svr_gflops_smaller_than_cache"
-                
-                tempModelLarger = runners.load_svr_model(models_name_gflops_larger, system_used, "None")
-                tempModelSmaller = runners.load_svr_model(models_name_gflops_smaller, system_used, "None")
-                model_lst.append(tempModelLarger)
-                model_lst.append(tempModelSmaller)
-                validation_dataset_lst.append(validation_dataset_larger)
-                validation_dataset_lst.append(validation_dataset_smaller)
-            
-            elif model == "tree":
-                models_name_gflops_larger = "tree_gflops_larger_than_cache"
-                models_name_gflops_smaller = "tree_gflops_smaller_than_cache"
-                
-                tempModelLarger = runners.load_tree_model(models_name_gflops_larger, system_used, "None")
-                tempModelSmaller = runners.load_tree_model(models_name_gflops_smaller, system_used, "None")
-                model_lst.append(tempModelLarger)
-                model_lst.append(tempModelSmaller)
-                validation_dataset_lst.append(validation_dataset_larger)
-                validation_dataset_lst.append(validation_dataset_smaller)
-        
-        runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst)
-        print("Plotting performances for CPU without cache split")
-
-        print("Plotting performances for GPU")
+                    model_lst.append(tempModelLarger)
+                    model_lst.append(tempModelSmaller)
+                    validation_dataset_lst.append(validation_dataset_larger)
+                    validation_dataset_lst.append(validation_dataset_smaller)
+                elif model == "svr":
+                    models_name_gflops_larger = "svr_gflops_larger_than_cache"
+                    models_name_gflops_smaller = "svr_gflops_smaller_than_cache"
+                    
+                    tempModelLarger = runners.load_svr_model(models_name_gflops_larger, system_used, "None")
+                    tempModelSmaller = runners.load_svr_model(models_name_gflops_smaller, system_used, "None")
+                    model_lst.append(tempModelLarger)
+                    model_lst.append(tempModelSmaller)
+                    validation_dataset_lst.append(validation_dataset_larger)
+                    validation_dataset_lst.append(validation_dataset_smaller)          
+                elif model == "tree":
+                    models_name_gflops_larger = "tree_gflops_larger_than_cache"
+                    models_name_gflops_smaller = "tree_gflops_smaller_than_cache"
+                    
+                    tempModelLarger = runners.load_tree_model(models_name_gflops_larger, system_used, "None")
+                    tempModelSmaller = runners.load_tree_model(models_name_gflops_smaller, system_used, "None")
+                    model_lst.append(tempModelLarger)
+                    model_lst.append(tempModelSmaller)
+                    validation_dataset_lst.append(validation_dataset_larger)
+                    validation_dataset_lst.append(validation_dataset_smaller)
+            save_path = "./Performance_Summary/"
+            graph_name = "BP_cache_{}".format(system_used)
+            runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst, save_path, graph_name)
+        else:
+            print("Plotting performance for {} without cache split".format(system_used))
+            model_name_lst : list = list()
+            model_lst : list = list()
+            validation_dataset_lst : list[dataReader.SparseMatrixDataset] = list()
+            for model in g.models:
+                model_name_lst.append("{}_{}".format(model, system_used))
+                csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
+                validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
+                if model == "mlp":
+                    model_name_mlp = "{}_{}epochs".format(model, MLP_globals.nb_epochs)
+                    tempModelMlp = runners.load_mlp_model(MLP_globals.activation_fn,
+                                                          MLP_globals.nb_hidden_layers,
+                                                          MLP_globals.in_dimension,
+                                                          MLP_globals.out_dimension,
+                                                          MLP_globals.hidden_size,
+                                                          model_name_mlp,
+                                                          system_used,
+                                                          "None")
+                    model_lst.append(tempModelMlp)
+                    validation_dataset_lst.append(validation_dataset)
+                elif model == "svr":
+                    model_name_svr = "svr_gflops"
+                    tempModelSvr = runners.load_svr_model(model_name_svr, system_used, "None")
+                    model_lst.append(tempModelSvr)
+                    validation_dataset_lst.append(validation_dataset)
+                elif model == "tree":
+                    model_name_tree = "tree_gflops"
+                    tempModelTree = runners.load_tree_model(model_name_tree, system_used, "None")
+                    model_lst.append(tempModelTree)
+                    validation_dataset_lst.append(validation_dataset)
+            print(model_lst)
+            print(model_name_lst)
+            save_path = "./Performance_Summary/"
+            graph_name = "BP_{}".format(system_used)
+            runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst, save_path, graph_name)
 
 
     if load_model :
@@ -244,10 +280,10 @@ if __name__ == "__main__":
                     path = g.MODEL_PATH + "{}/{}/{}".format(system_used, model_used, MLP_globals.nb_epochs)
                     runners.plot_prediction_dispersion_mlp(model, validation_dataset, name, path, implementation, "None")
 
-                    avg_loss_gflops = runners.average_loss_mlp(model, validation_loader, validation_dataset, 0)
+                    avg_loss_gflops = runners.average_loss_mlp(model, validation_dataset, 0)
                     print("Avg loss of model mlp on gflops : {}%".format(avg_loss_gflops.detach().tolist()*100))
 
-                    avg_loss_energy_efficiency = runners.average_loss_mlp(model, validation_loader, validation_dataset, 1)
+                    avg_loss_energy_efficiency = runners.average_loss_mlp(model, validation_dataset, 1)
                     print("Avg loss of model mlp on energy efficiency : {}%".format(avg_loss_energy_efficiency.detach().tolist()*100))
         
         elif model_used == "svr":
@@ -299,7 +335,7 @@ if __name__ == "__main__":
                 
                 
                 models_name_gflops = "svr_gflops"
-                model_gflops = runners.load_svr_model(models_name_gflops, system_used)
+                model_gflops = runners.load_svr_model(models_name_gflops, system_used, implementation)
                 validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
                 graph_name_gflops = "svr_load"
                 runners.plot_prediction_dispersion_sklearn(model_gflops, validation_dataset, graph_name_gflops, path, 0, model_used, implementation, "None")
@@ -851,10 +887,10 @@ if __name__ == "__main__":
         runners.plot_prediction_dispersion_mlp(mlp_model, validation_dataset, name, path, implementation, "None")
 
         # Computing average loss on validation dataset
-        avg_loss_gflops = runners.average_loss_mlp(mlp_model, validation_loader, validation_dataset, 0)
+        avg_loss_gflops = runners.average_loss_mlp(mlp_model, validation_dataset, 0)
         print("Avg loss of model mlp on gflops : {}%".format(avg_loss_gflops.detach().tolist()*100))
 
-        avg_loss_energy_efficiency = runners.average_loss_mlp(mlp_model, validation_loader, validation_dataset, 1)
+        avg_loss_energy_efficiency = runners.average_loss_mlp(mlp_model, validation_dataset, 1)
         print("Avg loss of model mlp on energy efficiency : {}%".format(avg_loss_energy_efficiency.detach().tolist()*100))
         
     elif model_used == "svr":

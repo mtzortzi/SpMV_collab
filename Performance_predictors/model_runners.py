@@ -21,6 +21,7 @@ import os
 from joblib import dump, load
 import re
 import pandas as pd
+from tqdm import tqdm
 
 def run_mlp(activation_function,
             nb_hidden_layers,
@@ -133,7 +134,7 @@ def run_mlp(activation_function,
             os.makedirs(MODEL_PATH + "{}/mlp/{}/{}".format(system, n_iteration, implementation))
         name = "mlp_{}epochs_validation".format(n_iteration)
         path = MODEL_PATH + "{}/mlp/{}/{}".format(system, n_iteration, implementation)
-    plot_prediction_dispersion_mlp(mlp_model, dataset, validation_loader, name, path, implementation, cache)
+    plot_prediction_dispersion_mlp(mlp_model, dataset, name, path, implementation, cache)
     
     #Ploting loss history
     idx_test_counter = (len(tbl_train_counter)-1)//n_iteration
@@ -153,7 +154,8 @@ def run_mlp(activation_function,
     return mlp_model
 
 def predict_mlp(model, input, scaler_gflops:preprocessing.MinMaxScaler, scaler_energy_efficiency:preprocessing.MinMaxScaler):
-    Y_pred = model(input.float())
+    # print(input, input.shape)
+    Y_pred = model(input)
     gflops_predicted_unscaled = torch.tensor(scaler_gflops.inverse_transform(Y_pred[0].detach().view(1, -1)))
     energy_efficiency_predicted_unscaled = torch.tensor(scaler_energy_efficiency.inverse_transform(Y_pred[1].detach().view(1, -1)))
     prediction = torch.cat((gflops_predicted_unscaled, energy_efficiency_predicted_unscaled), 1)
@@ -247,7 +249,7 @@ def run_svr(kernel, C, epsilon, gamma, csv_path, system, out_feature, implementa
             name = "svr_energy_efficiency_validation"
         path = MODEL_PATH + "{}/svr/{}".format(system, implementation)
 
-    plot_prediction_dispersion_sklearn(svr_model, dataset, validation_loader, name, path, out_feature, "svr", implementation, cache)
+    plot_prediction_dispersion_sklearn(svr_model, dataset, name, path, out_feature, "svr", implementation, cache)
     return svr_model 
 
 def run_tree(max_depth, csv_path, system, out_feature, implementation, cache):
@@ -290,9 +292,9 @@ def run_tree(max_depth, csv_path, system, out_feature, implementation, cache):
                 saved_model_path = MODEL_PATH + "{}/tree/tree_energy_efficiency_{}_than_cache".format(system, cache)
         else:
             if out_feature == 0:
-                saved_model_path = MODEL_PATH + "{}/svr/svr_gflops".format(system)
+                saved_model_path = MODEL_PATH + "{}/tree/tree_gflops".format(system)
             elif out_feature == 1:
-                saved_model_path = MODEL_PATH + "{}/svr/svr_energy_efficiency".format(system)
+                saved_model_path = MODEL_PATH + "{}/tree/tree_energy_efficiency".format(system)
     else:
         if cache != "None":
             if out_feature == 0:
@@ -322,7 +324,7 @@ def run_tree(max_depth, csv_path, system, out_feature, implementation, cache):
     
     
     
-    plot_prediction_dispersion_sklearn(tree_model, dataset, validation_loader, name, path, out_feature, "tree", implementation, cache)
+    plot_prediction_dispersion_sklearn(tree_model, dataset, name, path, out_feature, "tree", implementation, cache)
 
     return tree_model
 
@@ -334,6 +336,7 @@ def load_mlp_model(activation_fn,
                  name,
                  system,
                  implementation):
+    print("loading mlp model")
     model = MLP_model.MlpPredictor(activation_fn, 
                                    nb_hidden_layers,
                                    in_dimension,
@@ -381,13 +384,14 @@ def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
                                    model_name:str,
                                    implementation,
                                    cache):
-    
+    print("Plotting prediction for {} model".format(model_name))
     assert model_name in models
     predictions = []
     expectations = []
-    for idx in range(len(dataset)):
+    for idx in tqdm(range(len(dataset))):
         (X, Y) = dataset[idx]
         input = np.array([X.numpy()])
+        print(input)
         y_pred = model(input)
         if out_feature == 0:
             y_pred_unscaled = torch.tensor(dataset.scaler_gflops.inverse_transform(y_pred.reshape(-1, 1)))
@@ -530,7 +534,9 @@ def plot_prediction_dispersion_mlp(model:torch.nn.Module,
 
 def plot_performance(model_lst:list,
                      validation_dataset_lst:list[db.SparseMatrixDataset],
-                     model_name_lst:list[str]):
+                     model_name_lst:list[str],
+                     save_path:str,
+                     graph_name:str):
     
     d : dict = {"model_name" : list(), "loss" : list()}
     loss_fnc = MeanAbsolutePercentageError()
@@ -555,25 +561,24 @@ def plot_performance(model_lst:list,
             d["model_name"].append(model_name_lst[i])
             d['loss'].append(loss.tolist())
     df = pd.DataFrame(data=d)
-    print(df)
-    plt.figure(figsize=(10,7))
-    # plt.xlim(0, 5)
+    plt.figure(figsize=(15,7))
     for i in range(len(model_name_lst)):
         sns.boxplot(data=df, x="loss", y="model_name", showfliers=False)
-    
-    plt.savefig("boxplot.png")
+    print("saving boxplot")
+    plt.title(graph_name)
+    plt.savefig(save_path + graph_name + ".png")
     
 
-def average_loss_mlp(model:torch.nn.Module, validation_loader:DataLoader, validation_dataset:db.SparseMatrixDataset, out_feature:int):
+def average_loss_mlp(model:torch.nn.Module, validation_dataset:db.SparseMatrixDataset, out_feature:int):
     print("Average loss mlp")
     avg_loss_lst : list = []
     loss_fnc = MeanAbsolutePercentageError()
-
-    for batch in validation_loader:
-        (X, Y) = batch
+    for idx in range(len(validation_dataset)):
+        (X, Y) = validation_dataset[idx]
+        
         prediction = predict_mlp(model, X, validation_dataset.scaler_gflops, validation_dataset.scaler_energy_efficiency)
-        gflops_unscaled = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(Y[0][0].view(1, -1)))
-        energy_efficiency_unscaled = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(Y[0][1].view(1, -1)))
+        gflops_unscaled = torch.tensor(validation_dataset.scaler_gflops.inverse_transform(Y[0].view(1, -1)))
+        energy_efficiency_unscaled = torch.tensor(validation_dataset.scaler_energy_efficiency.inverse_transform(Y[1].view(1, -1)))
         expectation = torch.cat((gflops_unscaled, energy_efficiency_unscaled), 1) 
         loss = loss_fnc(prediction, expectation)
         avg_loss_lst.append(loss)
