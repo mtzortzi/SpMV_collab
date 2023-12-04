@@ -247,7 +247,7 @@ if __name__ == "__main__":
                 model_lst = [model_larger, model_smaller]
                 validation_dataset_lst = [validation_dataset_larger, validation_dataset_smaller]
                 model_name_lst = [model_name_larger, model_name_smaller]
-                runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst)
+                runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst, path, "BP_mlp_load", False, False)
             else:
                 if implementation != "None":
                     print("Loading mlp model without cache split and {} implementation".format(implementation))
@@ -327,7 +327,7 @@ if __name__ == "__main__":
                 model_lst = [model_gflops_larger, model_gflops_smaller]
                 validation_dataset_lst = [validation_dataset_larger, validation_dataset_smaller]
                 model_name_lst = [model_name_larger, model_name_smaller]
-                runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst)
+                runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst, path, "BP_svr_load", False, False)
             else:
                 if implementation != "None":
                     csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)

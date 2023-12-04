@@ -11,7 +11,7 @@ class SparseMatrixDataset(Dataset):
             "avg_nz_row", 
             "skew_coeff", 
             "avg_num_neighbours",
-            "cross_row_similarity", 
+            "cross_row_similarity",
             "avg_bandwidth_scaled"]
         self.dataframe = pd.read_csv(csv_file) # Getting all data
 
