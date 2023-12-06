@@ -12,7 +12,8 @@ class SparseMatrixDataset(Dataset):
             "skew_coeff", 
             "avg_num_neighbours",
             "cross_row_similarity",
-            "avg_bandwidth_scaled"]
+            "avg_bandwidth_scaled",
+            "avg_scattering_scaled"]
         self.dataframe = pd.read_csv(csv_file) # Getting all data
 
         # Scaling first row
