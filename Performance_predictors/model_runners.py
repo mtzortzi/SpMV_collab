@@ -569,7 +569,7 @@ def plot_performance(model_lst:list,
         for i in range(len(model_name_lst)):
                 sns.violinplot(data=df, x="loss", y="model_name")
                 outliers_dict[model_name_lst[i]] = len([y for stat in boxplot_stats(df['loss']) for y in stat['fliers']])
-        graph_name += "_violingPlot"
+        graph_name += "_violinPlot"
     else:
         for i in range(len(model_name_lst)):
             sns.boxplot(data=df, x="loss", y="model_name", showfliers=show_fliers)
