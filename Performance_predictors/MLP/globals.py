@@ -1,6 +1,6 @@
 import torch
 
-nb_epochs = 150
+nb_epochs = 100
 lr = 0.01
 loss_fn = torch.nn.MSELoss()
 activation_fn = torch.nn.Sigmoid()

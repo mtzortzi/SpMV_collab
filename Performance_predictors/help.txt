@@ -1,0 +1,13 @@
+usage: main.py [-h] [-m MODEL] [-s SYSTEM] [-i IMPLEMENTATION] [-c] [-l] [-p]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -m MODEL, --model MODEL
+                        Model name to run
+  -s SYSTEM, --system SYSTEM
+                        CPU/GPU name
+  -i IMPLEMENTATION, --implementation IMPLEMENTATION
+                        Implementation of the matrix, None if you want to use all implementations
+  -c, --cache-split     Tell if we want to use dataset seperated based on cache size
+  -l, --load            Load the model described from it's hyperparameters in it's corresponfing global.py file and the -m parameter described above
+  -p, --performance     Plots performances of all models

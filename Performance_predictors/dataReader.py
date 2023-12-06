@@ -12,9 +12,11 @@ class SparseMatrixDataset(Dataset):
             "skew_coeff", 
             "avg_num_neighbours",
             "cross_row_similarity",
-            "avg_bandwidth_scaled",
-            "avg_scattering_scaled"]
-        self.dataframe = pd.read_csv(csv_file) # Getting all data
+            "avg_bandwidth_scaled"]
+        
+        self.scaled_features = ["avg_bandwidth_scaled", "avg_scattering"]
+
+        self.dataframe = pd.read_csv(csv_file)
 
         # Scaling first row
         self.scalers = dict()
@@ -29,7 +31,11 @@ class SparseMatrixDataset(Dataset):
             self.x = torch.cat((self.x, torch.tensor(row_scaled, dtype=torch.float32)), 1)
 
         # Adding the bandwidth feature to the X entry
-        avg_bandwidth_scaled = torch.tensor(self.dataframe[self.features[-1]].to_numpy().reshape(-1, 1), dtype=torch.float32)
+        for feature in self.scaled_features:
+            scaled_feature = torch.tensor(self.dataframe[feature].to_numpy().reshape(-1, 1), dtype=torch.float32)
+            self.x = torch.cat((self.x, scaled_feature), 1)
+
+        avg_bandwidth_scaled = torch.tensor(self.dataframe[self.features[-2]].to_numpy().reshape(-1, 1), dtype=torch.float32)
         self.x = torch.cat((self.x, avg_bandwidth_scaled), 1)
         
         if not(using_implementation_split):
