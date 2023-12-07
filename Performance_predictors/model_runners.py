@@ -40,11 +40,10 @@ def run_mlp(activation_function,
                                        out_dimension,
                                        hidden_size)
     
-    
     if implementation != "None":  
-        dataset = dataReader.SparseMatrixDataset(csv_path, True)
+        dataset = dataReader.SparseMatrixDataset(csv_file=csv_path, using_implementation_split=True)
     else :
-        dataset = dataReader.SparseMatrixDataset(csv_path, False)
+        dataset = dataReader.SparseMatrixDataset(csv_file=csv_path, using_implementation_split=False)
     optimizer = torch.optim.SGD(mlp_model.parameters(), lr=MLP_globals.lr)
 
     test_split = 0.2
@@ -73,26 +72,26 @@ def run_mlp(activation_function,
     # Creating dataset for train and validation
     train_sampler = SubsetRandomSampler(train_indices)
     test_sampler = SubsetRandomSampler(test_indices)
-    validation_sampler = SubsetRandomSampler(validation_indices)
     train_loader = DataLoader(dataset,sampler=train_sampler)
     test_loader = DataLoader(dataset, sampler=test_sampler)
-    validation_loader = DataLoader(dataset, sampler=validation_sampler)
+    validation_dataset : db.SparseMatrixDataset = db.SparseMatrixDataset(dataframe=dataset.dataframe.iloc[validation_indices], using_implementation_split=(implementation!="None"))
+
     
 
     if cache != "None" :
         if implementation == "None":
             csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}_{}_than_cache.csv".format(system, cache)
-            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
+            prediction_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=False)
         else :
             csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}_{}_{}_than_cache.csv".format(system, implementation, cache)
-            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+            prediction_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=True)
     else:
         if implementation == "None":
             csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}.csv".format(system)
-            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
+            prediction_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=False)
         else:
             csv_path_validation = DATA_PATH + "validation/all_format/all_format_{}_{}.csv".format(system, implementation)
-            prediction_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+            prediction_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=True)
 
 
     #Fitting the neural network
@@ -135,7 +134,9 @@ def run_mlp(activation_function,
             os.makedirs(MODEL_PATH + "{}/mlp/{}/{}".format(system, n_iteration, implementation))
         name = "mlp_{}epochs_validation".format(n_iteration)
         path = MODEL_PATH + "{}/mlp/{}/{}".format(system, n_iteration, implementation)
-    plot_prediction_dispersion_mlp(mlp_model, dataset, name, path, implementation, cache)
+    
+
+    plot_prediction_dispersion_mlp(mlp_model, validation_dataset, name, path, implementation, cache)
     
     #Ploting loss history
     idx_test_counter = (len(tbl_train_counter)-1)//n_iteration
@@ -165,9 +166,9 @@ def predict_mlp(model, input, scaler_gflops:preprocessing.MinMaxScaler, scaler_e
 def run_svr(kernel, C, epsilon, gamma, csv_path, system, out_feature, implementation, cache):
     
     if implementation == "None":  
-        dataset = dataReader.SparseMatrixDataset(csv_path, False)
+        dataset = dataReader.SparseMatrixDataset(csv_file=csv_path, using_implementation_split=False)
     else :
-        dataset = dataReader.SparseMatrixDataset(csv_path, True)
+        dataset = dataReader.SparseMatrixDataset(csv_file=csv_path, using_implementation_split=True)
     
 
     svr_model = SVR_model.SvrPredictor(kernel, C, epsilon, gamma)
@@ -226,9 +227,7 @@ def run_svr(kernel, C, epsilon, gamma, csv_path, system, out_feature, implementa
     np.random.seed(42)
     np.random.shuffle(dataset_indices)
     _, validation_indices = dataset_indices[split:], dataset_indices[:split]
-    validation_sampler = SubsetRandomSampler(validation_indices)
-    validation_loader = DataLoader(dataset, sampler=validation_sampler)
-
+    validation_dataset : db.SparseMatrixDataset = db.SparseMatrixDataset(dataframe=dataset.dataframe.iloc[validation_indices], using_implementation_split=(implementation!="None"))
     name = ""
     path = ""
     if implementation == "None":
@@ -249,15 +248,17 @@ def run_svr(kernel, C, epsilon, gamma, csv_path, system, out_feature, implementa
         elif out_feature == 1:
             name = "svr_energy_efficiency_validation"
         path = MODEL_PATH + "{}/svr/{}".format(system, implementation)
+    
+    
 
-    plot_prediction_dispersion_sklearn(svr_model, dataset, name, path, out_feature, "svr", implementation, cache)
+    plot_prediction_dispersion_sklearn(svr_model, validation_dataset, name, path, out_feature, "svr", implementation, cache)
     return svr_model 
 
 def run_tree(max_depth, csv_path, system, out_feature, implementation, cache):
     if implementation == "None":
-        dataset = dataReader.SparseMatrixDataset(csv_path, False)
+        dataset = dataReader.SparseMatrixDataset(csv_file=csv_path, using_implementation_split=False)
     else:
-        dataset = dataReader.SparseMatrixDataset(csv_path, True)
+        dataset = dataReader.SparseMatrixDataset(csv_file=csv_path, using_implementation_split=True)
 
 
     tree_model : torch.nn.Module = Tree_model.TreePredictor(max_depth)
@@ -317,15 +318,15 @@ def run_tree(max_depth, csv_path, system, out_feature, implementation, cache):
     np.random.seed(42)
     np.random.shuffle(dataset_indices)
     _, validation_indices = dataset_indices[split:], dataset_indices[:split]
-    validation_sampler = SubsetRandomSampler(validation_indices)
-    validation_loader = DataLoader(dataset, sampler=validation_sampler)
+    validation_dataset : db.SparseMatrixDataset = db.SparseMatrixDataset(dataframe=dataset.dataframe.iloc[validation_indices], using_implementation_split=(implementation!="None"))
+
 
     if not(os.path.exists(MODEL_PATH + "{}/tree".format(system))):
         os.makedirs(MODEL_PATH + "{}/tree".format(system))
     
     
     
-    plot_prediction_dispersion_sklearn(tree_model, dataset, name, path, out_feature, "tree", implementation, cache)
+    plot_prediction_dispersion_sklearn(tree_model, validation_dataset, name, path, out_feature, "tree", implementation, cache)
 
     return tree_model
 
@@ -441,15 +442,6 @@ def plot_prediction_dispersion_sklearn(model:torch.nn.Module,
             plot.get_figure().savefig("{}/scattering_{}_{}.png".format(path, name, implementation))
     
     
-    if model_name == "tree":
-        plt.clf()
-        features = dataset.features
-        features.append("implementation")
-        plot_tree(model.tree, filled=True, feature_names=features)
-        if implementation == "None":
-            plt.savefig("{}/{}.pdf".format(path, name))
-        else:
-            plt.savefig("{}/{}_{}.pdf".format(path, name, implementation))
     plt.clf()
 
 def plot_prediction_dispersion_mlp(model:torch.nn.Module, 

@@ -80,8 +80,8 @@ if __name__ == "__main__":
                 model_name_lst.append("{}_{}_SC".format(model, system_used))
                 csv_path_validation_larger = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_than_cache.csv".format(system_used, "larger")
                 csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_than_cache.csv".format(system_used, "smaller")
-                validation_dataset_larger = dataReader.SparseMatrixDataset(csv_path_validation_larger, False)
-                validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_path_validation_smaller, False)
+                validation_dataset_larger = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_larger, using_implementation_split=False)
+                validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_smaller, using_implementation_split=False)
                 if model == "mlp":
                     model_name_larger = "{}_{}epochs_larger_than_cache".format(model, MLP_globals.nb_epochs)
                     model_name_smaller = "{}_{}epochs_smaller_than_cache".format(model, MLP_globals.nb_epochs)
@@ -143,7 +143,7 @@ if __name__ == "__main__":
             for model in g.models:
                 model_name_lst.append("{}_{}".format(model, system_used))
                 csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
-                validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
+                validation_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=False)
                 if model == "mlp":
                     model_name_mlp = "{}_{}epochs".format(model, MLP_globals.nb_epochs)
                     tempModelMlp = runners.load_mlp_model(MLP_globals.activation_fn,
@@ -189,8 +189,8 @@ if __name__ == "__main__":
                     csv_path_validation_larger = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_{}_than_cache.csv".format(system_used, implementation, "larger")
                     csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_{}_than_cache.csv".format(system_used, implementation, "smaller")
                     path = g.MODEL_PATH + "{}/{}/{}/{}/".format(system_used, model_used, MLP_globals.nb_epochs, implementation)
-                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_path_validation_larger, True)
-                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_path_validation_smaller, True)
+                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_larger, using_implementation_split=True)
+                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_smaller, using_implementation_split=True)
                     model_larger = runners.load_mlp_model(MLP_globals.activation_fn,
                                                     MLP_globals.nb_hidden_layers,
                                                     MLP_globals.in_dimension-1,
@@ -214,8 +214,8 @@ if __name__ == "__main__":
                     csv_path_validation_larger = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_than_cache.csv".format(system_used,  "larger")
                     csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_than_cache.csv".format(system_used, "smaller")
                     path = g.MODEL_PATH + "{}/{}/{}/".format(system_used, model_used, MLP_globals.nb_epochs)
-                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_path_validation_larger, False)
-                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_path_validation_smaller, False)
+                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_larger, using_implementation_split=False)
+                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_smaller, using_implementation_split=False)
                     model_larger = runners.load_mlp_model(MLP_globals.activation_fn,
                                                     MLP_globals.nb_hidden_layers,
                                                     MLP_globals.in_dimension,
@@ -261,7 +261,7 @@ if __name__ == "__main__":
                                                    model_name,
                                                    system_used,
                                                    implementation)
-                    validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+                    validation_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=True)
                     validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
                     graph_name = "mlp_{}_{}epochs".format(implementation, MLP_globals.nb_epochs)
                     path = g.MODEL_PATH + "{}/{}/{}/{}/".format(system_used, model_used, MLP_globals.nb_epochs, implementation)
@@ -279,7 +279,7 @@ if __name__ == "__main__":
                                                 system_used,
                                                 implementation)
                     
-                    validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
+                    validation_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=False)
                     validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
                     name = "mlp_{}epochs_load".format(MLP_globals.nb_epochs)
                     path = g.MODEL_PATH + "{}/{}/{}".format(system_used, model_used, MLP_globals.nb_epochs)
@@ -300,14 +300,14 @@ if __name__ == "__main__":
                 if implementation != "None":
                     csv_path_validation_larger = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_larger_than_cache.csv".format(system_used, implementation)
                     csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_smaller_than_cache.csv".format(system_used, implementation)
-                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_path_validation_larger, True)
-                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_path_validation_smaller, True)
+                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_larger, using_implementation_split=True)
+                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_smaller, using_implementation_split=True)
                     path = g.MODEL_PATH + "{}/svr/{}".format(system_used, implementation)
                 if implementation == "None":
                     csv_path_validation_larger = g.DATA_PATH + "/validation/all_format/all_format_{}_larger_than_cache.csv".format(system_used)
                     csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_smaller_than_cache.csv".format(system_used)
-                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_path_validation_larger, False)
-                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_path_validation_smaller, False)
+                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_larger, using_implementation_split=False)
+                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_smaller, using_implementation_split=False)
                     path = g.MODEL_PATH + "{}/svr".format(system_used)
                 
                 print("Larger than cache gflops")
@@ -331,11 +331,11 @@ if __name__ == "__main__":
             else:
                 if implementation != "None":
                     csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)
-                    validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+                    validation_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=True)
                     path = g.MODEL_PATH + "{}/svr/{}".format(system_used, implementation)        
                 if implementation == "None":
                     csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
-                    validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
+                    validation_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=False)
                     path = g.MODEL_PATH + "{}/svr".format(system_used)
                 
                 
@@ -353,14 +353,14 @@ if __name__ == "__main__":
                 if implementation != "None":
                     csv_path_validation_larger = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_larger_than_cache.csv".format(system_used, implementation)
                     csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_smaller_than_cache.csv".format(system_used, implementation)
-                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_path_validation_larger, True)
-                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_path_validation_smaller, True)
+                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_larger, using_implementation_split=True)
+                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_smaller, using_implementation_split=True)
                     path = g.MODEL_PATH + "{}/tree/{}".format(system_used, implementation)
                 if implementation == "None":
                     csv_path_validation_larger = g.DATA_PATH + "/validation/all_format/all_format_{}_larger_than_cache.csv".format(system_used)
                     csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_smaller_than_cache.csv".format(system_used)
-                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_path_validation_larger, False)
-                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_path_validation_smaller, False)
+                    validation_dataset_larger = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_larger, using_implementation_split=False)
+                    validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_smaller,using_implementation_split=False)
                     path = g.MODEL_PATH + "{}/tree".format(system_used)
                 
                 print("Larger than cache gflops")
@@ -379,11 +379,11 @@ if __name__ == "__main__":
             else:
                 if implementation != "None":
                     csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)
-                    validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+                    validation_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=True)
                     path = g.MODEL_PATH + "{}/tree/{}".format(system_used, implementation)        
                 if implementation == "None":
                     csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
-                    validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
+                    validation_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=False)
                     path = g.MODEL_PATH + "{}/tree".format(system_used)
                 
                 
@@ -403,7 +403,7 @@ if __name__ == "__main__":
                 # Running mlp for larger than cache
                 csv_path_larger_than_cache = g.DATA_PATH + "all_format/all_format_{}_{}_larger_than_cache.csv".format(system_used, implementation)
                 csv_path_validation_larger_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_{}_larger_than_cache.csv".format(system_used, implementation)
-                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_larger_than_cache, True)
+                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_larger_than_cache, using_implementation_split=True)
                 validation_loader_larger_than_cache = DataLoader(validation_dataset_larger_than_cache, batch_size=1, shuffle=True)
 
                 mlp_model_larger_than_cache = runners.run_mlp(MLP_globals.activation_fn,
@@ -427,7 +427,7 @@ if __name__ == "__main__":
                 # Running mlp for smaller than cache
                 csv_path_smaller_than_cache = g.DATA_PATH + "all_format/all_format_{}_{}_smaller_than_cache.csv".format(system_used, implementation)
                 csv_path_valiation_smaller_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_{}_smaller_than_cache.csv".format(system_used, implementation)
-                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_path_valiation_smaller_than_cache, True)
+                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_file=csv_path_valiation_smaller_than_cache, using_implementation_split=True)
                 validation_loader_smaller_than_cache = DataLoader(validation_dataset_smaller_than_cache, batch_size=1, shuffle=True)
 
                 mlp_model_smaller_than_cache = runners.run_mlp(MLP_globals.activation_fn,
@@ -453,7 +453,7 @@ if __name__ == "__main__":
                 # Running mlp for larger than cache
                 csv_path_larger_than_cache = g.DATA_PATH + "all_format/all_format_{}_larger_than_cache.csv".format(system_used)
                 csv_path_validation_larger_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_larger_than_cache.csv".format(system_used)
-                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_larger_than_cache, False)
+                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_larger_than_cache, using_implementation_split=False)
                 validation_loader_larger_than_cache = DataLoader(validation_dataset_larger_than_cache, batch_size=1, shuffle=True)
 
                 mlp_model_larger_than_cache = runners.run_mlp(MLP_globals.activation_fn,
@@ -477,7 +477,7 @@ if __name__ == "__main__":
                 # Running mlp for smaller than cache
                 csv_path_smaller_than_cache = g.DATA_PATH + "all_format/all_format_{}_smaller_than_cache.csv".format(system_used)
                 csv_path_valiation_smaller_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_smaller_than_cache.csv".format(system_used)
-                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_path_valiation_smaller_than_cache, False)
+                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_file=csv_path_valiation_smaller_than_cache, using_implementation_split=False)
                 validation_loader_smaller_than_cache = DataLoader(validation_dataset_smaller_than_cache, batch_size=1, shuffle=True)
 
                 mlp_model_smaller_than_cache = runners.run_mlp(MLP_globals.activation_fn,
@@ -504,7 +504,7 @@ if __name__ == "__main__":
                 # Running svr for larger than cache
                 csv_path_larger_than_cache = g.DATA_PATH + "all_format/all_format_{}_{}_larger_than_cache.csv".format(system_used, implementation)
                 csv_path_validation_larger_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_{}_larger_than_cache.csv".format(system_used, implementation)
-                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_larger_than_cache, True)
+                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_larger_than_cache, using_implementation_split=True)
                 validation_loader_larger_than_cache = DataLoader(validation_dataset_larger_than_cache, batch_size=1, shuffle=True)
 
                 print("Larger than cache gflops")
@@ -549,7 +549,7 @@ if __name__ == "__main__":
                 # Running svr for smaller than cache
                 csv_path_smaller_than_cache = g.DATA_PATH + "all_format/all_format_{}_{}_smaller_than_cache.csv".format(system_used, implementation)
                 csv_path_validation_smaller_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_{}_smaller_than_cache.csv".format(system_used, implementation)
-                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_smaller_than_cache, True)
+                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_smaller_than_cache, using_implementation_split=True)
                 validation_loader_smaller_than_cache = DataLoader(validation_dataset_smaller_than_cache, batch_size=1, shuffle=True)
 
                 print("Smaller than cache gflops")
@@ -597,7 +597,7 @@ if __name__ == "__main__":
                 # Running mlp for larger than cache
                 csv_path_larger_than_cache = g.DATA_PATH + "all_format/all_format_{}_larger_than_cache.csv".format(system_used)
                 csv_path_validation_larger_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_larger_than_cache.csv".format(system_used)
-                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_larger_than_cache, False)
+                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_larger_than_cache, using_implementation_split=False)
                 validation_loader_larger_than_cache = DataLoader(validation_dataset_larger_than_cache, batch_size=1, shuffle=True)
 
                 print("Larger than cache gflops")
@@ -644,7 +644,7 @@ if __name__ == "__main__":
                 # Running svr for smaller than cache
                 csv_path_smaller_than_cache = g.DATA_PATH + "all_format/all_format_{}_smaller_than_cache.csv".format(system_used)
                 csv_path_validation_smaller_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_smaller_than_cache.csv".format(system_used)
-                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_smaller_than_cache, False)
+                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_smaller_than_cache, using_implementation_split=False)
                 validation_loader_smaller_than_cache = DataLoader(validation_dataset_smaller_than_cache, batch_size=1, shuffle=True)
 
                 print("Smaller than cache gflops")
@@ -695,7 +695,7 @@ if __name__ == "__main__":
                 # Running tree for larger than cache
                 csv_path_larger_than_cache = g.DATA_PATH + "all_format/all_format_{}_{}_larger_than_cache.csv".format(system_used, implementation)
                 csv_path_validation_larger_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_{}_larger_than_cache.csv".format(system_used, implementation)
-                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_larger_than_cache, True)
+                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_larger_than_cache, using_implementation_split=True)
                 validation_loader_larger_than_cache = DataLoader(validation_dataset_larger_than_cache, batch_size=1, shuffle=True)
 
                 print("Larger than cache gflops")
@@ -734,7 +734,7 @@ if __name__ == "__main__":
                 # Running tree for smaller than cache
                 csv_path_smaller_than_cache = g.DATA_PATH + "all_format/all_format_{}_{}_smaller_than_cache.csv".format(system_used, implementation)
                 csv_path_validation_smaller_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_{}_smaller_than_cache.csv".format(system_used, implementation)
-                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_smaller_than_cache, True)
+                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_smaller_than_cache, using_implementation_split=True)
                 validation_loader_smaller_than_cache = DataLoader(validation_dataset_smaller_than_cache, batch_size=1, shuffle=True)
 
                 print("Smaller than cache gflops")
@@ -776,7 +776,7 @@ if __name__ == "__main__":
                 # Running mlp for larger than cache
                 csv_path_larger_than_cache = g.DATA_PATH + "all_format/all_format_{}_larger_than_cache.csv".format(system_used)
                 csv_path_validation_larger_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_larger_than_cache.csv".format(system_used)
-                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_larger_than_cache, False)
+                validation_dataset_larger_than_cache = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_larger_than_cache, using_implementation_split=False)
                 validation_loader_larger_than_cache = DataLoader(validation_dataset_larger_than_cache, batch_size=1, shuffle=True)
 
                 print("Larger than cache gflops")
@@ -817,7 +817,7 @@ if __name__ == "__main__":
                 # Running tree for smaller than cache
                 csv_path_smaller_than_cache = g.DATA_PATH + "all_format/all_format_{}_smaller_than_cache.csv".format(system_used)
                 csv_path_validation_smaller_than_cache = g.DATA_PATH + "validation/all_format/all_format_{}_smaller_than_cache.csv".format(system_used)
-                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_path_validation_smaller_than_cache, False)
+                validation_dataset_smaller_than_cache = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_smaller_than_cache, using_implementation_split=False)
                 validation_loader_smaller_than_cache = DataLoader(validation_dataset_smaller_than_cache, batch_size=1, shuffle=True)
 
                 print("Smaller than cache gflops")
@@ -859,13 +859,13 @@ if __name__ == "__main__":
             csv_path = g.DATA_PATH + "all_format/all_format_{}.csv".format(system_used)
             csv_path_validation = g.DATA_PATH + "validation/all_format/all_format_{}.csv".format(system_used)
             path = g.MODEL_PATH + "{}/mlp/{}".format(system_used, MLP_globals.nb_epochs)
-            validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)    
+            validation_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=False)    
         else :
             print("running mlp with {} system with {} implementation".format(system_used, implementation))
             csv_path = g.DATA_PATH + "all_format/all_format_{}_{}.csv".format(system_used, implementation)
             csv_path_validation = g.DATA_PATH + "validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)
             path = g.MODEL_PATH + "{}/mlp/{}/{}".format(system_used, MLP_globals.nb_epochs, implementation)
-            validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+            validation_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=True)
 
         
             
@@ -903,13 +903,13 @@ if __name__ == "__main__":
             print("Running SVR with {} system without implementation without cache split".format(system_used))
             csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
             csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
-            validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
+            validation_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=False)
             path = g.MODEL_PATH + "{}/svr".format(system_used)
         else:
             print("Running SVR with {} system with {} implementation without cache split".format(system_used, implementation))
             csv_path = g.DATA_PATH + "/all_format/all_format_{}_{}.csv".format(system_used, implementation)
             csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)
-            validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+            validation_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=True)
             path = g.MODEL_PATH + "{}/svr/{}".format(system_used, implementation)
             
         validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
@@ -967,13 +967,13 @@ if __name__ == "__main__":
             print("Running Tree with {} system without implementation without cache split".format(system_used))
             csv_path = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
             csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
-            validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, False)
+            validation_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=False)
             path = g.MODEL_PATH + "{}/tree".format(system_used)
         else:
             print("Running Tree with {} system with {} implementation without cache split".format(system_used, implementation))
             csv_path = g.DATA_PATH + "/all_format/all_format_{}_{}.csv".format(system_used, implementation)
             csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}_{}.csv".format(system_used, implementation)
-            validation_dataset = dataReader.SparseMatrixDataset(csv_path_validation, True)
+            validation_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=True)
             path = g.MODEL_PATH + "{}/tree/{}".format(system_used, implementation)
         validation_loader = DataLoader(validation_dataset, batch_size=1, shuffle=True)
         

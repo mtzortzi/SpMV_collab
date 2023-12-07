@@ -2,6 +2,7 @@ import pandas as pd
 import torch
 import os
 from sklearn import preprocessing
+import numpy as np
 
 def scale_row(row):
         scaler = preprocessing.MinMaxScaler()
@@ -58,3 +59,12 @@ for feature in scaled_features:
     print(feature)
     scaled_feature = torch.tensor(dataframe[feature].to_numpy().reshape(-1, 1), dtype=torch.float32)
     x = torch.cat((x, scaled_feature), 1)
+
+dataset_indices = list(range(len(dataframe)))
+split = int(np.floor(0.05 * len(dataframe)))
+
+np.random.seed(42)
+np.random.shuffle(dataset_indices)
+_, validation_indices = dataset_indices[split:], dataset_indices[:split]
+
+print(type(dataframe.iloc[validation_indices]))
