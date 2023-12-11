@@ -442,7 +442,6 @@ if __name__ == "__main__":
                 name_smaller_than_cache = "mlp_{}epochs_real_data".format(MLP_globals.nb_epochs)
                 runners.plot_prediction_dispersion_mlp(mlp_model_smaller_than_cache, 
                                                     validation_dataset_smaller_than_cache, 
-                                                    validation_loader_smaller_than_cache,
                                                     name_smaller_than_cache,
                                                     path,
                                                     implementation,
@@ -680,7 +679,6 @@ if __name__ == "__main__":
                 name_smaller_than_cache = "svr_real_data_smaller_than_cache"
                 runners.plot_prediction_dispersion_sklearn(svr_model_smaller_than_cache_energy,
                                                            validation_dataset_smaller_than_cache,
-                                                           validation_loader_smaller_than_cache,
                                                            name_smaller_than_cache,
                                                            path,
                                                            1,
