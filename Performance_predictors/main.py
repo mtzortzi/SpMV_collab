@@ -80,8 +80,13 @@ if __name__ == "__main__":
                 model_name_lst.append("{}_{}_SC".format(model, system_used))
                 csv_path_validation_larger = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_than_cache.csv".format(system_used, "larger")
                 csv_path_validation_smaller = g.DATA_PATH + "/validation/all_format/all_format_{}_{}_than_cache.csv".format(system_used, "smaller")
+                
+
                 validation_dataset_larger = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_larger, using_implementation_split=False)
                 validation_dataset_smaller = dataReader.SparseMatrixDataset(csv_file=csv_path_validation_smaller, using_implementation_split=False)
+
+                
+                
                 if model == "mlp":
                     model_name_larger = "{}_{}epochs_larger_than_cache".format(model, MLP_globals.nb_epochs)
                     model_name_smaller = "{}_{}epochs_smaller_than_cache".format(model, MLP_globals.nb_epochs)
@@ -103,6 +108,7 @@ if __name__ == "__main__":
                                                         model_name_smaller,
                                                         system_used,
                                                         "None")
+
 
                     model_lst.append(tempModelLarger)
                     model_lst.append(tempModelSmaller)
@@ -138,12 +144,37 @@ if __name__ == "__main__":
         else:
             print("Plotting performance for {} without cache split".format(system_used))
             model_name_lst : list = list()
+            model_name_artificial_lst : list = list() # Model name list for the 5% split of the artificial dataset
             model_lst : list = list()
+            model_artificial_lst : list = list() # Model list for the 5% split of the artificial dataset
             validation_dataset_lst : list[dataReader.SparseMatrixDataset] = list()
+            validation_dataset_artificial_lst : list[dataReader.SparseMatrixDataset] = list() # Dataset list for the 5% split of the artificial dataset
+
+            
+            
             for model in g.models:
                 model_name_lst.append("{}_{}".format(model, system_used))
                 csv_path_validation = g.DATA_PATH + "/validation/all_format/all_format_{}.csv".format(system_used)
                 validation_dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_validation, using_implementation_split=False)
+
+                csv_path_artificial = g.DATA_PATH + "/all_format/all_format_{}.csv".format(system_used)
+                dataset = dataReader.SparseMatrixDataset(csv_file=csv_path_artificial, using_implementation_split=False)
+                    
+                # Doing 5% split of the artificial dataset
+                split_validation_artificial = 0.05
+                shuffle_dataset = True
+                random_seed = 42
+                dataset_size = len(dataset)
+                indices = list(range(dataset_size))
+
+                split  = int(np.floor(split_validation_artificial * dataset_size))
+                if shuffle_dataset:
+                    np.random.seed(random_seed)
+                    np.random.shuffle(indices)
+                _, validation_artificial_indices = indices[split:], indices[:split]
+                validation_artificial_dataset : dataReader.SparseMatrixDataset = dataReader.SparseMatrixDataset(dataframe=dataset.dataframe.iloc[validation_artificial_indices],
+                                                                                                                using_implementation_split=False)
+
                 if model == "mlp":
                     model_name_mlp = "{}_{}epochs".format(model, MLP_globals.nb_epochs)
                     tempModelMlp = runners.load_mlp_model(MLP_globals.activation_fn,
@@ -154,24 +185,35 @@ if __name__ == "__main__":
                                                           model_name_mlp,
                                                           system_used,
                                                           "None")
+                    
                     model_lst.append(tempModelMlp)
+                    model_artificial_lst.append(tempModelMlp)
                     validation_dataset_lst.append(validation_dataset)
+                    validation_dataset_artificial_lst.append(validation_artificial_dataset)
                 elif model == "svr":
                     model_name_svr = "svr_gflops"
                     tempModelSvr = runners.load_svr_model(model_name_svr, system_used, "None")
                     model_lst.append(tempModelSvr)
+                    model_artificial_lst.append(tempModelSvr)
                     validation_dataset_lst.append(validation_dataset)
+                    validation_dataset_artificial_lst.append(validation_artificial_dataset)
                 elif model == "tree":
                     model_name_tree = "tree_gflops"
                     tempModelTree = runners.load_tree_model(model_name_tree, system_used, "None")
                     model_lst.append(tempModelTree)
+                    model_artificial_lst.append(tempModelTree)
                     validation_dataset_lst.append(validation_dataset)
+                    validation_dataset_artificial_lst.append(validation_artificial_dataset)
             save_path = "./Performance_Summary/"
             graph_name = "BP_{}".format(system_used)
+            graph_names = ["BP_{}".format(system_used), "BP_artificial_dataset_{}".format(system_used)]
             
-            runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst, save_path, graph_name, True, False)
-            runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst, save_path, graph_name, False, False)
-            runners.plot_performance(model_lst, validation_dataset_lst, model_name_lst, save_path, graph_name, False, True)
+            dataset_lst = [validation_dataset_lst, validation_dataset_artificial_lst]
+
+            for i in range(len(dataset_lst)):
+                runners.plot_performance(model_lst, dataset_lst[i], model_name_lst, save_path, graph_names[i], True, False)
+                runners.plot_performance(model_lst, dataset_lst[i], model_name_lst, save_path, graph_names[i], False, False)
+                runners.plot_performance(model_lst, dataset_lst[i], model_name_lst, save_path, graph_names[i], False, True)
 
 
     if load_model :
